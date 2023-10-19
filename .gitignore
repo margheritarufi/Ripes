@@ -1,0 +1,19 @@
+*.user
+*.stash
+*.autosave
+*.o
+Makefile
+build*
+.vscode
+
+
+# Qt generated files
+moc_*
+*.moc
+ui_*
+qrc_*
+
+# Executables & libraries
+Ripes
+RipesTest
+libRipesLib.a

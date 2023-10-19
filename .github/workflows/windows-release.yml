@@ -1,0 +1,78 @@
+name: Windows / Qt 6.5.0
+on:
+  workflow_run:
+    workflows: ["Release setup"]
+    types: [completed]
+
+jobs:
+  buildWindows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        build-type: [Release, Debug]
+
+    steps:
+    - name: get container ready for build
+      uses: ilammy/msvc-dev-cmd@v1
+    - uses: seanmiddleditch/gha-setup-ninja@master
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        aqtversion: '==3.1.*'
+        py7zrversion: '>=0.20.2'
+        version: '6.5.0'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtcharts'
+
+    - name: checkout sources
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        fetch-depth: 0
+
+    - name: build Ripes
+      shell: bash
+      run: |
+        cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl
+        cmake --build .
+
+    - name: package artifacts
+      shell: bash
+      run: |
+        source .github/workflows/scripts/set_version.sh
+        APPNAME=Ripes-${RIPES_VERSION}-win-x86_64.zip
+        echo "APPNAME=${APPNAME}" >> $GITHUB_ENV
+        mkdir packageDir
+        pushd packageDir
+        mv ../Ripes.exe .
+        # Translate ie. "Release" -> "release"
+        windeployqt.exe -svg --$(echo "${{ matrix.build-type }}" | tr '[:upper:]' '[:lower:]') \
+          --no-compiler-runtime --no-opengl-sw --no-translations Ripes.exe
+        7z a -r ../${APPNAME} *
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.build-type }}_executable
+        path: ${{ env.APPNAME }}
+
+    - name: continuous release
+      uses: softprops/action-gh-release@v1
+      if: github.ref == 'refs/heads/master' && matrix.build-type == 'Release'
+      with:
+        prerelease: true
+        files: ${{ env.APPNAME }}
+        tag_name: continuous
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - if: (startsWith(github.ref, 'refs/tags/')) && (matrix.build-type == 'Release')
+      name: tagged release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.APPNAME }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

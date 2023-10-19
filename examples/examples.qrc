@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/examples">
+        <file>C/ranpi.c</file>
+        <file>C/consoleInput.c</file>
+        <file>C/matrixmul.c</file>
+        <file>assembly/factorial.s</file>
+        <file>assembly/complexMul.s</file>
+        <file>assembly/consolePrinting.s</file>
+        <file>C/leds.c</file>
+        <file>C/switchesAndLeds.c</file>
+        <file>assembly/leds.s</file>
+        <file>ELF/RanPi-RV32</file>
+        <file>ELF/RanPi-RV64</file>
+        <file>assembly/consoleReading.s</file>
+    </qresource>
+</RCC>

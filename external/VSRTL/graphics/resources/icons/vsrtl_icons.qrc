@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/vsrtl_icons">
+        <file>minus.svg</file>
+        <file>plus.svg</file>
+        <file>collapse.svg</file>
+        <file>expand.svg</file>
+        <file>reset.svg</file>
+        <file>step.svg</file>
+        <file>step-clock.svg</file>
+        <file>list.svg</file>
+        <file>stop-clock.svg</file>
+        <file>reverse.svg</file>
+        <file>output.svg</file>
+        <file>input.svg</file>
+        <file>expandSquare.svg</file>
+        <file>alignright.svg</file>
+        <file>alignleft.svg</file>
+        <file>aligncenter.svg</file>
+    </qresource>
+</RCC>
