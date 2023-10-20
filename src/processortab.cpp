@@ -9,6 +9,9 @@
 #include <QSpinBox>
 #include <QTemporaryFile>
 
+//rufi
+#include <QDebug>
+
 #include "consolewidget.h"
 #include "instructionmodel.h"
 #include "pipelinediagrammodel.h"
@@ -20,6 +23,9 @@
 #include "registermodel.h"
 #include "ripessettings.h"
 #include "syscall/systemio.h"
+
+//rufi
+#include "hwdescription.h"
 
 #include "VSRTL/graphics/vsrtl_widget.h"
 
@@ -296,6 +302,15 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
           });
   m_darkmodeAction->setChecked(
       RipesSettings::value(RIPES_SETTING_DARKMODE).toBool());
+
+  //rufi
+  const QIcon hwIcon = QIcon(":/icons/downloadHwDescription.svg");
+  m_downloadHwDescriptionAction =
+      new QAction(hwIcon, "Download HW description files", this);
+  connect(m_downloadHwDescriptionAction, &QAction::triggered, this,
+          &ProcessorTab::downloadHwDescription);
+  m_toolbar->addAction(m_downloadHwDescriptionAction);
+
 }
 
 void ProcessorTab::updateStatistics() {
@@ -369,10 +384,10 @@ void ProcessorTab::loadProcessorToWidget(const Layout *layout) {
   fitToScreen();
 }
 
-void ProcessorTab::processorSelection() {
+void ProcessorTab::processorSelection() { //rufi: connected to processorselection button: this function is called when that button is clicked
   m_autoClockAction->setChecked(false);
-  ProcessorSelectionDialog diag;
-  if (diag.exec()) {
+  ProcessorSelectionDialog diag; //rufi: creation of a dialog window to select processor
+  if (diag.exec()) { //rufi: here the window is opened
     // New processor model was selected
     m_vsrtlWidget->clearDesign();
     m_stageInstructionLabels.clear();
@@ -592,4 +607,11 @@ void ProcessorTab::showPipelineDiagram() {
   auto w = PipelineDiagramWidget(m_stageModel);
   w.exec();
 }
+
+//rufi
+void ProcessorTab::downloadHwDescription(){
+  qDebug() << "Ho premuto l'icona hw";
+  collectParams();
+}
+
 } // namespace Ripes
