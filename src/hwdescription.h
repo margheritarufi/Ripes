@@ -1,12 +1,15 @@
-#include "processorregistry.h"
 #include "processorhandler.h"
+#include "processorregistry.h"
 #include <QDebug>
 
 namespace Ripes {
 
-void collectParams(){
-  const Ripes :: ProcessorID &ID = ProcessorHandler::getID(); // Now ID contains the constant reference to the object of type ProcessorID
-  Ripes :: ProcessorID idValue = ID; // Now idValue contains the value of the object
+void collectParams() {
+  const Ripes ::ProcessorID &ID =
+      ProcessorHandler::getID(); // Now ID contains the constant reference to
+                                 // the object of type ProcessorID
+  Ripes ::ProcessorID idValue =
+      ID; // Now idValue contains the value of the object
   qDebug() << "Current Processor ID:" << idValue;
 
   /*switch(ID){
@@ -35,17 +38,14 @@ void collectParams(){
   case RV64_6S_DUAL:
 
   }*/
-
 }
 
+/*Inspirations:
+//Returns the ID of the currently instantiated processor. (from
+processorhandler.h) static const ProcessorID &getID() { return get()->_getID();
+} auto &desc = ProcessorRegistry::getDescription(ProcessorHandler::getID());
+QString status = "Processor: " + desc.name + "    ISA: " +
+ProcessorHandler::getProcessor()->implementsISA()->name();
+*/
 
-  /*Inspirations:
-  //Returns the ID of the currently instantiated processor. (from processorhandler.h)
-  static const ProcessorID &getID() { return get()->_getID(); }
-  auto &desc = ProcessorRegistry::getDescription(ProcessorHandler::getID());
-  QString status = "Processor: " + desc.name + "    ISA: " +
-  ProcessorHandler::getProcessor()->implementsISA()->name();
-  */
-
-}
-
+} // namespace Ripes

@@ -57,7 +57,7 @@ private slots:
   void autoClockTimeout();
   void setInstructionViewCenterRow(int row);
   void showPipelineDiagram();
-  void downloadHwDescription(); //rufi
+  void downloadHwDescription(); // rufi
 
 private:
   void setupSimulatorActions(QToolBar *controlToolbar);
@@ -88,7 +88,7 @@ private:
   QAction *m_resetAction = nullptr;
   QAction *m_darkmodeAction = nullptr;
   QTimer *m_autoClockTimer = nullptr;
-  QAction *m_downloadHwDescriptionAction = nullptr; //rufi
+  QAction *m_downloadHwDescriptionAction = nullptr; // rufi
 
   QSpinBox *m_autoClockInterval = nullptr;
 };

@@ -9,7 +9,7 @@
 #include <QSpinBox>
 #include <QTemporaryFile>
 
-//rufi
+// rufi
 #include <QDebug>
 
 #include "consolewidget.h"
@@ -24,7 +24,7 @@
 #include "ripessettings.h"
 #include "syscall/systemio.h"
 
-//rufi
+// rufi
 #include "hwdescription.h"
 
 #include "VSRTL/graphics/vsrtl_widget.h"
@@ -303,14 +303,13 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
   m_darkmodeAction->setChecked(
       RipesSettings::value(RIPES_SETTING_DARKMODE).toBool());
 
-  //rufi
+  // rufi
   const QIcon hwIcon = QIcon(":/icons/downloadHwDescription.svg");
   m_downloadHwDescriptionAction =
       new QAction(hwIcon, "Download HW description files", this);
   connect(m_downloadHwDescriptionAction, &QAction::triggered, this,
           &ProcessorTab::downloadHwDescription);
   m_toolbar->addAction(m_downloadHwDescriptionAction);
-
 }
 
 void ProcessorTab::updateStatistics() {
@@ -384,10 +383,13 @@ void ProcessorTab::loadProcessorToWidget(const Layout *layout) {
   fitToScreen();
 }
 
-void ProcessorTab::processorSelection() { //rufi: connected to processorselection button: this function is called when that button is clicked
+void ProcessorTab::
+    processorSelection() { // rufi: connected to processorselection button: this
+                           // function is called when that button is clicked
   m_autoClockAction->setChecked(false);
-  ProcessorSelectionDialog diag; //rufi: creation of a dialog window to select processor
-  if (diag.exec()) { //rufi: here the window is opened
+  ProcessorSelectionDialog
+      diag;          // rufi: creation of a dialog window to select processor
+  if (diag.exec()) { // rufi: here the window is opened
     // New processor model was selected
     m_vsrtlWidget->clearDesign();
     m_stageInstructionLabels.clear();
@@ -608,8 +610,8 @@ void ProcessorTab::showPipelineDiagram() {
   w.exec();
 }
 
-//rufi
-void ProcessorTab::downloadHwDescription(){
+// rufi
+void ProcessorTab::downloadHwDescription() {
   qDebug() << "Ho premuto l'icona hw";
   collectParams();
 }
