@@ -1,10 +1,29 @@
 #include "processorhandler.h"
 #include "processorregistry.h"
+#include "processortab.h"
 #include <QDebug>
+#include <QFileDialog>
 #include <iostream>
 #include <fstream>
 
 namespace Ripes {
+  void OpenFileDialog();
+
+/*class HwDescription : public QObject {
+  Q_OBJECT
+
+public:
+  HwDescription(QObject *parent = nullptr);
+  // Dichiarazione della funzione openFileDialog()
+
+public slots:
+  void OpenFileDialog();
+};*/
+
+
+}
+
+/*namespace Ripes {
 
 void collectParams() {
   const Ripes ::ProcessorID &ID =
@@ -13,9 +32,22 @@ void collectParams() {
   Ripes ::ProcessorID idValue =
       ID; // Now idValue contains the value of the object
   qDebug() << "Current Processor ID:" << idValue;
+}
+
+void OpenFileDialog(){
+  QString selectedDirectory = QFileDialog::getExistingDirectory(ProcessorTab, "Select a destination folder", QDir::homePath());
+
+  if (!selectedDirectory.isEmpty()) {
+      // Utilizza selectedDirectory per gestire il percorso della cartella selezionata
+      // Ad esempio, puoi salvarlo in una variabile o utilizzarlo per il tuo codice
+      // che produce i file.
+      // Esempio:
+    qDebug() << "Cartella selezionata: " << selectedDirectory;
+  }
+
 
   // Name of the file to be crated or overwritten
-  std::string nomeFile = "params.vh";
+  /*std::string nomeFile = "params.vh";
   std::ofstream file(nomeFile);
 
   if (file.is_open()) {
@@ -26,7 +58,7 @@ void collectParams() {
     std::cout << "File 'params.vh' creato o sovrascritto con successo." << std::endl;
     } else {
     std::cerr << "Impossibile aprire il file 'params.vh'." << std::endl;
-    }
+    }*/
 
   /*switch(ID){
   case RV32_SS:
@@ -54,7 +86,7 @@ void collectParams() {
   case RV64_6S_DUAL:
 
   }*/
-}
+//}
 
 /*Inspirations:
 //Returns the ID of the currently instantiated processor. (from
@@ -64,4 +96,4 @@ QString status = "Processor: " + desc.name + "    ISA: " +
 ProcessorHandler::getProcessor()->implementsISA()->name();
 */
 
-} // namespace Ripes
+//} // namespace Ripes

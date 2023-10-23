@@ -613,7 +613,10 @@ void ProcessorTab::showPipelineDiagram() {
 // rufi
 void ProcessorTab::downloadHwDescription() {
   qDebug() << "Ho premuto l'icona hw";
-  collectParams();
+  OpenFileDialog();
+
+  /*Ripes::HwDescription hwDescription;
+  hwDescription.OpenFileDialog();*/
 }
 
 } // namespace Ripes
