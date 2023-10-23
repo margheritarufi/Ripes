@@ -1,6 +1,8 @@
 #include "processorhandler.h"
 #include "processorregistry.h"
 #include <QDebug>
+#include <iostream>
+#include <fstream>
 
 namespace Ripes {
 
@@ -11,6 +13,20 @@ void collectParams() {
   Ripes ::ProcessorID idValue =
       ID; // Now idValue contains the value of the object
   qDebug() << "Current Processor ID:" << idValue;
+
+  // Name of the file to be crated or overwritten
+  std::string nomeFile = "params.vh";
+  std::ofstream file(nomeFile);
+
+  if (file.is_open()) {
+    file << "//These are automatically-generated parameters. The designer cannot change them because they depend on th user's choice of the processor" << std::endl;
+
+    file.close();
+
+    std::cout << "File 'params.vh' creato o sovrascritto con successo." << std::endl;
+    } else {
+    std::cerr << "Impossibile aprire il file 'params.vh'." << std::endl;
+    }
 
   /*switch(ID){
   case RV32_SS:
