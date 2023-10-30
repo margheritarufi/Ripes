@@ -5,6 +5,7 @@
 #include <QResource>
 #include <QTimer>
 #include <iostream>
+//#include <QDir>
 
 #include "src/cli/clioptions.h"
 #include "src/cli/clirunner.h"

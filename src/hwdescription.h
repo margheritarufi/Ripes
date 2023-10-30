@@ -6,8 +6,13 @@
 #include <iostream>
 #include <fstream>
 
-namespace Ripes {
-  void OpenFileDialog();
+//namespace Ripes {
+  void downloadFiles();
+  QString openDirectoryDialog();
+  Ripes::ProcessorID getProcessorType();
+  void createDirectory(QString directoryPath, Ripes::ProcessorID ID);
+  void createParamsFile();
+  QString processorIDToQString(Ripes::ProcessorID ID);
 
 /*class HwDescription : public QObject {
   Q_OBJECT
@@ -21,7 +26,7 @@ public slots:
 };*/
 
 
-}
+//}
 
 /*namespace Ripes {
 
