@@ -9,10 +9,19 @@
 //namespace Ripes {
   void downloadFiles();
   QString openDirectoryDialog();
-  Ripes::ProcessorID getProcessorType();
-  void createDirectory(QString directoryPath, Ripes::ProcessorID ID);
-  void createParamsFile();
+  QString getProcessorType();
+  QString createDirectory(QString directoryPath);
+  std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath, QString QfolderName);
+  void writeProcessorType(std::shared_ptr<std::ofstream> file);
+  void writeNbStages(std::shared_ptr<std::ofstream> file);
+  void writeWidth(std::shared_ptr<std::ofstream> file);
+  void writeFwHz(std::shared_ptr<std::ofstream> file);
+  QString getNbStages(Ripes::ProcessorID ID);
+  QString getWidth(Ripes::ProcessorID ID);
+  QString getFw(Ripes::ProcessorID ID);
+  QString getHazard(Ripes::ProcessorID ID);
   QString processorIDToQString(Ripes::ProcessorID ID);
+
 
 /*class HwDescription : public QObject {
   Q_OBJECT

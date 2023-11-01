@@ -8,19 +8,26 @@
 
 
 //no Ripes namespace because otherwise I get LNK2019 error when I use QDir
-QString QselectedPath;
-QString QfolderName;
+Ripes::ProcessorID thisID; //& = Ripes::ProcessorHandler::getID();
+QString QcurrentID; // = getProcessorType();
+std::string currentID; // = QcurrentID.toStdString();
+std::string selectedDirectory;
+std::string folderName;
+//std::ofstream paramsFile;
 
 void downloadFiles(){
+  const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID();
+  thisID = ID;
+  QcurrentID = getProcessorType();
+  currentID = QcurrentID.toStdString();
   QString selectedPath = openDirectoryDialog();
-  Ripes::ProcessorID currentID = getProcessorType();
-  createDirectory(selectedPath, currentID);
+  QString QfolderName = createDirectory(selectedPath);
   //collectParameters();
-  createParamsFile();
-  //writeProcessorType();
-  //writeNbStages();
-  //writeWidth();
-  //writeFwHz();
+  auto paramsFile = createParamsFile(selectedPath, QfolderName);
+  writeProcessorType(paramsFile);
+  writeNbStages(paramsFile);
+  writeWidth(paramsFile);
+  writeFwHz(paramsFile);
   //writeRegsInitialValues(); //better to write them one by one or create an xml?
   //writeActivePeripherals();
   //writeCacheSettings(); //instr and data
@@ -29,8 +36,7 @@ void downloadFiles(){
 
 //This function creates the dialog window to choose the directory and the name of the file to
 QString openDirectoryDialog(){
-  //QString defaultFileName = "CPU_hw_description";
-  QselectedPath = QFileDialog::getExistingDirectory(nullptr, "Select directory where the folder will be created", QDir::homePath());
+  QString QselectedPath = QFileDialog::getExistingDirectory(nullptr, "Select directory where the folder will be created", QDir::homePath());
   qDebug() << "Selected folder: " << QselectedPath;
 
   if (QselectedPath.isEmpty()) {
@@ -39,16 +45,15 @@ QString openDirectoryDialog(){
   return QselectedPath;
 }
 
-Ripes::ProcessorID getProcessorType(){
-  const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID(); // Now ID contains the constant reference to the object of type ProcessorID
-  Ripes::ProcessorID idValue = ID; // Now idValue contains the value of the object
+QString getProcessorType(){
+  Ripes::ProcessorID idValue = thisID; // Now idValue contains the value of the object
   qDebug() << "Current Processor ID:" << idValue;
-  return idValue;
+  QString QstringID = processorIDToQString(idValue);
+  return QstringID;
 }
 
-void createDirectory(QString directoryPath, Ripes::ProcessorID ID){
-  QString QstringID = processorIDToQString(ID);
-  QfolderName = QstringID;
+QString createDirectory(QString directoryPath){
+  QString QfolderName;
   if (!directoryPath.isEmpty()) {
     QfolderName = QInputDialog::getText(
         nullptr,
@@ -56,55 +61,207 @@ void createDirectory(QString directoryPath, Ripes::ProcessorID ID){
         "Choose a name for the folder"
         );
   }
+  if (QfolderName == ""){
+     QfolderName = QcurrentID;
+  }
   QDir dir(directoryPath);
   qDebug() << "Directory exists:" << dir.exists();
   dir.mkdir(QfolderName);
+  return QfolderName;
 }
 
-void createParamsFile(){
-  std::string selectedDirectory = QselectedPath.toStdString();
-  std::string folderName = QfolderName.toStdString();
-  std::ofstream file(selectedDirectory + "/" + folderName + "/params.vh");
+std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath, QString QfolderName){
+  selectedDirectory = directoryPath.toStdString();
+  folderName = QfolderName.toStdString();
+  auto file = std::make_shared<std::ofstream>(selectedDirectory + "/" + folderName + "/params.vh", std::ios::app);
 
-  if (file.is_open()) {
-    file << "//These are automatically-generated parameters. The designer cannot change them because they depend on the user's choice of the processor" << std::endl;
-    file.close();
+  if (file->is_open()) {
+     (*file) << "//These are automatically-generated parameters. The designer cannot change them because they depend on the user's choice of the processor" << std::endl;
+    //file.close();
     std::cout << "params.vh created successfully." << std::endl;
   } else {
     std::cerr << "Ripes couldn't open params.vh" << std::endl;
   }
+  return file;
 }
 
-QString processorIDToQString(Ripes::ProcessorID ID) {
+void writeProcessorType(std::shared_ptr<std::ofstream> file){
+  if (file->is_open()) {
+    (*file) << "\n`define PROC_TYPE " << currentID << std::endl;
+    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
+  }
+}
+
+void writeNbStages(std::shared_ptr<std::ofstream> file){
+  if (file->is_open()) {
+    (*file) << "`define NB_STAGES " << getNbStages(thisID).toStdString() << std::endl;
+    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
+  }
+}
+
+void writeWidth(std::shared_ptr<std::ofstream> file){
+  if (file->is_open()) {
+    (*file) << "`define DATA_WIDTH " << getWidth(thisID).toStdString() << std::endl;
+    (*file) << "`define ADDR_WIDTH " << getWidth(thisID).toStdString() << std::endl;
+    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
+  }
+}
+
+void writeFwHz(std::shared_ptr<std::ofstream> file){
+  if (file->is_open()) {
+    (*file) << "`define FW_PATH " << getFw(thisID).toStdString() << std::endl;
+    (*file) << "`define HZ_DETECT " << getHazard(thisID).toStdString() << std::endl;
+    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
+  }
+}
+
+QString getNbStages(Ripes::ProcessorID ID) {
   switch (ID) {
   case Ripes::RV32_SS:
-    return "RV32_SS";
+    return "1";
   case Ripes::RV32_5S_NO_FW_HZ:
-    return "RV32_5S_NO_FW_HZ";
+    return "5";
   case Ripes::RV32_5S_NO_HZ:
-    return "RV32_5S_NO_HZ";
+    return "5";
   case Ripes::RV32_5S_NO_FW:
-    return "RV32_5S_NO_FW";
+    return "5";
   case Ripes::RV32_5S:
-    return "RV32_5S";
+    return "5";
   case Ripes::RV32_6S_DUAL:
-    return "RV32_6S_DUAL";
+    return "6";
   case Ripes::RV64_SS:
-    return "RV64_SS";
+    return "1";
   case Ripes::RV64_5S_NO_FW_HZ:
-    return "RV64_5S_NO_FW_HZ";
+    return "5";
   case Ripes::RV64_5S_NO_HZ:
-    return "RV64_5S_NO_HZ";
+    return "5";
   case Ripes::RV64_5S_NO_FW:
-    return "RV64_5S_NO_FW";
+    return "5";
   case Ripes::RV64_5S:
-    return "RV64_5S";
+    return "5";
   case Ripes::RV64_6S_DUAL:
-    return "RV64_6S_DUAL";
+    return "6";
   case Ripes::NUM_PROCESSORS:
     return "NUM_PROCESSORS";
   default:
     return "Unknown Processor ID";
   }
+}
+
+QString getWidth(Ripes::ProcessorID ID) {
+  switch (ID) {
+  case Ripes::RV32_SS:
+    return "32";
+  case Ripes::RV32_5S_NO_FW_HZ:
+    return "32";
+  case Ripes::RV32_5S_NO_HZ:
+    return "32";
+  case Ripes::RV32_5S_NO_FW:
+    return "32";
+  case Ripes::RV32_5S:
+    return "32";
+  case Ripes::RV32_6S_DUAL:
+    return "6";
+  case Ripes::RV64_SS:
+    return "64";
+  case Ripes::RV64_5S_NO_FW_HZ:
+    return "64";
+  case Ripes::RV64_5S_NO_HZ:
+    return "64";
+  case Ripes::RV64_5S_NO_FW:
+    return "64";
+  case Ripes::RV64_5S:
+    return "64";
+  case Ripes::RV64_6S_DUAL:
+    return "64";
+  case Ripes::NUM_PROCESSORS:
+    return "NUM_PROCESSORS";
+  default:
+    return "Unknown Processor ID";
+  }
+}
+
+QString getFw(Ripes::ProcessorID ID) {
+  switch (ID) {
+  case Ripes::RV32_5S_NO_HZ:
+    return "1";
+  case Ripes::RV32_5S:
+    return "1";
+  case Ripes::RV32_6S_DUAL:
+    return "1";
+  case Ripes::RV64_5S_NO_HZ:
+    return "1";
+  case Ripes::RV64_5S:
+    return "1";
+  case Ripes::RV64_6S_DUAL:
+    return "1";
+  case Ripes::NUM_PROCESSORS:
+    return "NUM_PROCESSORS";
+  default:
+    return "0";
+  }
+}
+
+QString getHazard(Ripes::ProcessorID ID) {
+  switch (ID) {
+  case Ripes::RV32_5S_NO_FW:
+    return "1";
+  case Ripes::RV32_5S:
+    return "1";
+  case Ripes::RV32_6S_DUAL:
+    return "1";
+  case Ripes::RV64_5S_NO_FW:
+    return "1";
+  case Ripes::RV64_5S:
+    return "1";
+  case Ripes::RV64_6S_DUAL:
+    return "1";
+  case Ripes::NUM_PROCESSORS:
+    return "NUM_PROCESSORS";
+  default:
+    return "0";
+  }
+}
+
+QString processorIDToQString(Ripes::ProcessorID ID) {
+  switch (ID) {
+    case Ripes::RV32_SS:
+      return "RV32_SS";
+    case Ripes::RV32_5S_NO_FW_HZ:
+      return "RV32_5S_NO_FW_HZ";
+    case Ripes::RV32_5S_NO_HZ:
+      return "RV32_5S_NO_HZ";
+    case Ripes::RV32_5S_NO_FW:
+      return "RV32_5S_NO_FW";
+    case Ripes::RV32_5S:
+      return "RV32_5S";
+    case Ripes::RV32_6S_DUAL:
+      return "RV32_6S_DUAL";
+    case Ripes::RV64_SS:
+      return "RV64_SS";
+    case Ripes::RV64_5S_NO_FW_HZ:
+      return "RV64_5S_NO_FW_HZ";
+    case Ripes::RV64_5S_NO_HZ:
+      return "RV64_5S_NO_HZ";
+    case Ripes::RV64_5S_NO_FW:
+      return "RV64_5S_NO_FW";
+    case Ripes::RV64_5S:
+      return "RV64_5S";
+    case Ripes::RV64_6S_DUAL:
+      return "RV64_6S_DUAL";
+    case Ripes::NUM_PROCESSORS:
+      return "NUM_PROCESSORS";
+    default:
+      return "Unknown Processor ID";
+    }
+
 }
 
