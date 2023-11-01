@@ -76,7 +76,7 @@ std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath, QString Q
   auto file = std::make_shared<std::ofstream>(selectedDirectory + "/" + folderName + "/params.vh", std::ios::app);
 
   if (file->is_open()) {
-     (*file) << "//These are automatically-generated parameters. The designer cannot change them because they depend on the user's choice of the processor" << std::endl;
+     (*file) << "//These are automatically-generated parameters." << "\n" << "//The designer cannot change them because they depend on the user's choice of the processor" << std::endl;
     //file.close();
     std::cout << "params.vh created successfully." << std::endl;
   } else {
@@ -87,7 +87,7 @@ std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath, QString Q
 
 void writeProcessorType(std::shared_ptr<std::ofstream> file){
   if (file->is_open()) {
-    (*file) << "\n`define PROC_TYPE " << currentID << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "PROC_TYPE " << currentID << std::endl;
     std::cout << "Processor ID successfully written in params.vh." << std::endl;
   } else {
     std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
@@ -96,7 +96,7 @@ void writeProcessorType(std::shared_ptr<std::ofstream> file){
 
 void writeNbStages(std::shared_ptr<std::ofstream> file){
   if (file->is_open()) {
-    (*file) << "`define NB_STAGES " << getNbStages(thisID).toStdString() << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "NB_STAGES " << getNbStages(thisID).toStdString() << std::right << std::setw(35) << " //Possible values: 1, 5, 6" << std::endl;
     std::cout << "Processor ID successfully written in params.vh." << std::endl;
   } else {
     std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
@@ -105,8 +105,8 @@ void writeNbStages(std::shared_ptr<std::ofstream> file){
 
 void writeWidth(std::shared_ptr<std::ofstream> file){
   if (file->is_open()) {
-    (*file) << "`define DATA_WIDTH " << getWidth(thisID).toStdString() << std::endl;
-    (*file) << "`define ADDR_WIDTH " << getWidth(thisID).toStdString() << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "DATA_WIDTH " << getWidth(thisID).toStdString() << std::right << std::setw(35) << " //Possible values: 32, 64" << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "ADDR_WIDTH " << getWidth(thisID).toStdString() << std::right << std::setw(35) << " //Possible values: 32, 64" << std::endl;
     std::cout << "Processor ID successfully written in params.vh." << std::endl;
   } else {
     std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
@@ -115,8 +115,8 @@ void writeWidth(std::shared_ptr<std::ofstream> file){
 
 void writeFwHz(std::shared_ptr<std::ofstream> file){
   if (file->is_open()) {
-    (*file) << "`define FW_PATH " << getFw(thisID).toStdString() << std::endl;
-    (*file) << "`define HZ_DETECT " << getHazard(thisID).toStdString() << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "FW_PATH " << getFw(thisID).toStdString() << std::right << std::setw(35) << " //Possible values: 1/0 : yes/no" << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "HZ_DETECT " << getHazard(thisID).toStdString() << std::right << std::setw(35) << " //Possible values: 1/0 : yes/no" << std::endl;
     std::cout << "Processor ID successfully written in params.vh." << std::endl;
   } else {
     std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
