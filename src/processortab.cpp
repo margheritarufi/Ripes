@@ -9,6 +9,9 @@
 #include <QSpinBox>
 #include <QTemporaryFile>
 
+// rufi
+#include <QDebug>
+
 #include "consolewidget.h"
 #include "instructionmodel.h"
 #include "pipelinediagrammodel.h"
@@ -20,6 +23,9 @@
 #include "registermodel.h"
 #include "ripessettings.h"
 #include "syscall/systemio.h"
+
+// rufi
+#include "hwdescription.h"
 
 #include "VSRTL/graphics/vsrtl_widget.h"
 
@@ -89,7 +95,7 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
     }
     loadProcessorToWidget(layout);
 
-    // By default, lock the VSRTL widget
+           // By default, lock the VSRTL widget
     m_vsrtlWidget->setLocked(true);
   }
 
@@ -108,9 +114,9 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
 
   setupSimulatorActions(controlToolbar);
 
-  // Setup statistics update timer - this timer is distinct from the
-  // ProcessorHandler's update timer, given that it needs to run during
-  // 'running' the processor.
+         // Setup statistics update timer - this timer is distinct from the
+         // ProcessorHandler's update timer, given that it needs to run during
+         // 'running' the processor.
   m_statUpdateTimer = new QTimer(this);
   m_statUpdateTimer->setInterval(
       1000.0 / RipesSettings::value(RIPES_SETTING_UIUPDATEPS).toInt());
@@ -123,14 +129,14 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
                 RipesSettings::value(RIPES_SETTING_UIUPDATEPS).toInt());
           });
 
-  // Connect changes in VSRTL reversible stack size to checking whether the
-  // simulator is reversible
+         // Connect changes in VSRTL reversible stack size to checking whether the
+         // simulator is reversible
   connect(RipesSettings::getObserver(RIPES_SETTING_REWINDSTACKSIZE),
           &SettingObserver::modified, m_reverseAction, [=](const auto &) {
             m_reverseAction->setEnabled(m_vsrtlWidget->isReversible());
           });
 
-  // Connect the global reset request signal to reset()
+         // Connect the global reset request signal to reset()
   connect(ProcessorHandler::get(), &ProcessorHandler::processorReset, this,
           &ProcessorTab::reset);
   connect(ProcessorHandler::get(), &ProcessorHandler::exit, this,
@@ -140,19 +146,19 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
   connect(ProcessorHandler::get(), &ProcessorHandler::stopping, this,
           &ProcessorTab::pause);
 
-  // Make processor view stretch wrt. consoles
+         // Make processor view stretch wrt. consoles
   m_ui->pipelinesplitter->setStretchFactor(0, 1);
   m_ui->pipelinesplitter->setStretchFactor(1, 0);
 
-  // Make processor view stretch wrt. right side tabs
+         // Make processor view stretch wrt. right side tabs
   m_ui->viewSplitter->setStretchFactor(0, 1);
   m_ui->viewSplitter->setStretchFactor(1, 0);
 
-  // Adjust sizing between register view and instruction view
+         // Adjust sizing between register view and instruction view
   m_ui->rightBarSplitter->setStretchFactor(0, 6);
   m_ui->rightBarSplitter->setStretchFactor(1, 1);
 
-  // Initially, no file is loaded, disable toolbuttons
+         // Initially, no file is loaded, disable toolbuttons
   enableSimulatorControls();
 }
 
@@ -166,10 +172,10 @@ void ProcessorTab::loadLayout(const Layout &layout) {
              "A stage label position must be specified for each stage");
   }
 
-  // cereal expects the archive file to be present standalone on disk, and
-  // available through an ifstream. Copy the resource layout file (bundled
-  // within the binary as a Qt resource) to a temporary file, for loading the
-  // layout.
+         // cereal expects the archive file to be present standalone on disk, and
+         // available through an ifstream. Copy the resource layout file (bundled
+         // within the binary as a Qt resource) to a temporary file, for loading the
+         // layout.
   const auto &layoutResourceFilename = layout.file;
   QFile layoutResourceFile(layoutResourceFilename);
   QTemporaryFile *tmpLayoutFile =
@@ -184,7 +190,7 @@ void ProcessorTab::loadLayout(const Layout &layout) {
       tmpLayoutFile->fileName());
   tmpLayoutFile->remove();
 
-  // Adjust stage label positions
+         // Adjust stage label positions
   const auto &parent = m_stageInstructionLabels.at({0, 0})->parentItem();
   for (auto sid : ProcessorHandler::getProcessor()->structure().stageIt()) {
     auto &label = m_stageInstructionLabels.at(sid);
@@ -230,7 +236,7 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
 
   m_autoClockTimer = new QTimer(this);
   connect(m_autoClockTimer, &QTimer::timeout, this,
-          [=] { ProcessorHandler::clock(); });
+          [=] { autoClockTimeout(); });
 
   const QIcon startAutoClockIcon = QIcon(":/icons/step-clock.svg");
   m_autoClockAction = new QAction(startAutoClockIcon, "Auto clock (F6)", this);
@@ -239,8 +245,7 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
       "Clock the circuit with the selected frequency (F6)");
   m_autoClockAction->setCheckable(true);
   m_autoClockAction->setChecked(false);
-  connect(m_autoClockAction, &QAction::triggered, this,
-          &ProcessorTab::autoClock);
+  connect(m_autoClockAction, &QAction::toggled, this, &ProcessorTab::autoClock);
   controlToolbar->addAction(m_autoClockAction);
 
   m_autoClockInterval = new QSpinBox(this);
@@ -268,7 +273,7 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
   connect(m_runAction, &QAction::toggled, this, &ProcessorTab::run);
   controlToolbar->addAction(m_runAction);
 
-  // Setup processor-tab only actions
+         // Setup processor-tab only actions
   m_displayValuesAction = new QAction("Show processor signal values", this);
   m_displayValuesAction->setCheckable(true);
   connect(m_displayValuesAction, &QAction::toggled, m_vsrtlWidget,
@@ -297,6 +302,14 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
           });
   m_darkmodeAction->setChecked(
       RipesSettings::value(RIPES_SETTING_DARKMODE).toBool());
+
+         // rufi
+  const QIcon hwIcon = QIcon(":/icons/downloadHwDescription.svg");
+  m_downloadHwDescriptionAction =
+      new QAction(hwIcon, "Download HW description files", this);
+  connect(m_downloadHwDescriptionAction, &QAction::triggered, this,
+          &ProcessorTab::downloadHwDescription);
+  m_toolbar->addAction(m_downloadHwDescriptionAction);
 }
 
 void ProcessorTab::updateStatistics() {
@@ -314,7 +327,7 @@ void ProcessorTab::updateStatistics() {
                         1000.0; // in seconds
   const auto cycleDiff = cycleCount - lastCycleCount;
 
-  // Cycle count
+         // Cycle count
   m_ui->cycleCount->setText(QString::number(cycleCount));
   // Instructions retired
   m_ui->instructionsRetired->setText(QString::number(instrsRetired));
@@ -330,11 +343,11 @@ void ProcessorTab::updateStatistics() {
   m_ui->cpi->setText(cpiText);
   m_ui->ipc->setText(ipcText);
 
-  // Clock rate
+         // Clock rate
   const double clockRate = static_cast<double>(cycleDiff) / timeDiff;
   m_ui->clockRate->setText(convertToSIUnits(clockRate) + "Hz");
 
-  // Record timestamp values
+         // Record timestamp values
   lastUpdateTime = timeNow;
   lastCycleCount = cycleCount;
 }
@@ -351,7 +364,7 @@ void ProcessorTab::loadProcessorToWidget(const Layout *layout) {
   const bool doPlaceAndRoute = layout != nullptr;
   ProcessorHandler::loadProcessorToWidget(m_vsrtlWidget, doPlaceAndRoute);
 
-  // Construct stage instruction labels
+         // Construct stage instruction labels
   auto *topLevelComponent = m_vsrtlWidget->getTopLevelComponent();
 
   m_stageInstructionLabels.clear();
@@ -370,10 +383,13 @@ void ProcessorTab::loadProcessorToWidget(const Layout *layout) {
   fitToScreen();
 }
 
-void ProcessorTab::processorSelection() {
+void ProcessorTab::
+    processorSelection() { // rufi: connected to processorselection button: this
+                           // function is called when that button is clicked
   m_autoClockAction->setChecked(false);
-  ProcessorSelectionDialog diag;
-  if (diag.exec()) {
+  ProcessorSelectionDialog
+      diag;          // rufi: creation of a dialog window to select processor
+  if (diag.exec()) { // rufi: here the window is opened
     // New processor model was selected
     m_vsrtlWidget->clearDesign();
     m_stageInstructionLabels.clear();
@@ -381,7 +397,7 @@ void ProcessorTab::processorSelection() {
                                       diag.getEnabledExtensions(),
                                       diag.getRegisterInitialization());
 
-    // Store selected layout index
+           // Store selected layout index
     const auto &layouts =
         ProcessorRegistry::getDescription(diag.getSelectedId()).layouts;
     if (auto *layout = diag.getSelectedLayout()) {
@@ -397,7 +413,7 @@ void ProcessorTab::processorSelection() {
     }
     updateInstructionModel();
 
-    // Retrigger value display action if enabled
+           // Retrigger value display action if enabled
     if (m_displayValuesAction->isChecked()) {
       m_vsrtlWidget->setOutputPortValuesVisible(true);
     }
@@ -408,11 +424,11 @@ void ProcessorTab::updateInstructionModel() {
   auto *oldModel = m_instrModel;
   m_instrModel = new InstructionModel(this);
 
-  // Update the instruction view according to the newly created model
+         // Update the instruction view according to the newly created model
   m_ui->instructionView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   m_ui->instructionView->setModel(m_instrModel);
 
-  // Only the instruction column should stretch
+         // Only the instruction column should stretch
   m_ui->instructionView->horizontalHeader()->setMinimumSectionSize(1);
   m_ui->instructionView->horizontalHeader()->setSectionResizeMode(
       InstructionModel::Breakpoint, QHeaderView::ResizeToContents);
@@ -510,7 +526,7 @@ void ProcessorTab::setInstructionViewCenterRow(int row) {
 
   const int nItemsVisible = rowBot - rowTop;
 
-  // move scrollbar if if is not visible
+         // move scrollbar if if is not visible
   if (row <= rowTop || row >= rowBot) {
     auto scrollbar = view->verticalScrollBar();
     scrollbar->setValue(row - nItemsVisible / 2);
@@ -524,6 +540,12 @@ void ProcessorTab::runFinished() {
   m_statUpdateTimer->stop();
 }
 
+void ProcessorTab::autoClockTimeout() {
+  if (ProcessorHandler::checkBreakpoint())
+    return;
+  ProcessorHandler::clock();
+}
+
 void ProcessorTab::autoClock(bool state) {
   const QIcon startAutoClockIcon = QIcon(":/icons/step-clock.svg");
   const QIcon stopAutoTimerIcon = QIcon(":/icons/stop-clock.svg");
@@ -531,11 +553,16 @@ void ProcessorTab::autoClock(bool state) {
     m_autoClockTimer->stop();
     m_autoClockAction->setIcon(startAutoClockIcon);
   } else {
+    // Always clock the processor to start with. Afterwards, run
+    // autoClockTimeout() which will check if the processor is at a breakpoint.
+    // This is to circumvent some annoying cross-thread, eventloop,
+    // race-condition-y state setting wrt. when exactly a breakpoint is hit.
+    ProcessorHandler::clock();
     m_autoClockTimer->start();
     m_autoClockAction->setIcon(stopAutoTimerIcon);
   }
 
-  // Enable/disable all other actions
+         // Enable/disable all other actions
   m_selectProcessorAction->setEnabled(!state);
   m_clockAction->setEnabled(!state);
   m_reverseAction->setEnabled(!state);
@@ -558,7 +585,7 @@ void ProcessorTab::run(bool state) {
     m_statUpdateTimer->stop();
   }
 
-  // Enable/Disable all actions based on whether the processor is running.
+         // Enable/Disable all actions based on whether the processor is running.
   m_selectProcessorAction->setEnabled(!state);
   m_clockAction->setEnabled(!state);
   m_autoClockAction->setEnabled(!state);
@@ -567,7 +594,7 @@ void ProcessorTab::run(bool state) {
   m_displayValuesAction->setEnabled(!state);
   m_pipelineDiagramAction->setEnabled(!state);
 
-  // Disable widgets which are not updated when running the processor
+         // Disable widgets which are not updated when running the processor
   m_vsrtlWidget->setEnabled(!state);
   m_ui->registerContainerWidget->setEnabled(!state);
   m_ui->instructionView->setEnabled(!state);
@@ -582,4 +609,13 @@ void ProcessorTab::showPipelineDiagram() {
   auto w = PipelineDiagramWidget(m_stageModel);
   w.exec();
 }
+
+// rufi
+void ProcessorTab::downloadHwDescription() {
+  qDebug() << "Ho premuto l'icona hw";
+  downloadFiles();
+  /*Ripes::HwDescription hwDescription;
+  hwDescription.OpenFileDialog();*/
+}
+
 } // namespace Ripes

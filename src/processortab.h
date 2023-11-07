@@ -54,8 +54,10 @@ public slots:
 private slots:
   void run(bool state);
   void autoClock(bool state);
+  void autoClockTimeout();
   void setInstructionViewCenterRow(int row);
   void showPipelineDiagram();
+  void downloadHwDescription(); // rufi
 
 private:
   void setupSimulatorActions(QToolBar *controlToolbar);
@@ -75,7 +77,7 @@ private:
 
   QTimer *m_statUpdateTimer;
 
-  // Actions
+         // Actions
   QAction *m_selectProcessorAction = nullptr;
   QAction *m_clockAction = nullptr;
   QAction *m_autoClockAction = nullptr;
@@ -86,6 +88,7 @@ private:
   QAction *m_resetAction = nullptr;
   QAction *m_darkmodeAction = nullptr;
   QTimer *m_autoClockTimer = nullptr;
+  QAction *m_downloadHwDescriptionAction = nullptr; // rufi
 
   QSpinBox *m_autoClockInterval = nullptr;
 };
