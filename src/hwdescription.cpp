@@ -9,6 +9,7 @@
 #include "cachesim/cachesim.h"
 #include "cachetabwidget.h"
 #include "cachetab.h"
+#include "hwdescriptioncache.h"
 
 
 //no Ripes namespace because otherwise I get LNK2019 error when I use QDir
@@ -17,6 +18,7 @@ QString QcurrentID; // = getProcessorType();
 std::string currentID; // = QcurrentID.toStdString();
 std::string selectedDirectory;
 std::string folderName;
+std::shared_ptr<std::ofstream> paramsFile;
 //std::ofstream paramsFile;
 
 void downloadFiles(){
@@ -27,7 +29,7 @@ void downloadFiles(){
   QString selectedPath = openDirectoryDialog();
   QString QfolderName = createDirectory(selectedPath);
   //collectParameters();
-  auto paramsFile = createParamsFile(selectedPath, QfolderName);
+  paramsFile = createParamsFile(selectedPath, QfolderName);
   writeProcessorType(paramsFile);
   writeNbStages(paramsFile);
   writeWidth(paramsFile);
@@ -35,7 +37,7 @@ void downloadFiles(){
   //writeRegsInitialValues(); //better to write them one by one or create an xml?
   //writeActivePeripherals();
   //writeInstrCacheSettings(); //instr and data
-  //writeDataCacheSettings();
+  writeDataCacheSettings(paramsFile);
   //writeMemoryMap();
 }
 

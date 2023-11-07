@@ -7,6 +7,8 @@
 #include <fstream>
 
 //namespace Ripes {
+extern std::shared_ptr<std::ofstream> paramsFile;
+
 void downloadFiles();
 QString openDirectoryDialog();
 QString getProcessorType();

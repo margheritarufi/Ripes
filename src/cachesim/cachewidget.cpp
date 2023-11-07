@@ -10,6 +10,7 @@
 
 #include "../hwdescriptioncache.h" //rufi
 #include <QDebug>
+#include "../cachetabwidget.h"
 
 namespace Ripes {
 
@@ -33,9 +34,18 @@ CacheWidget::CacheWidget(QWidget *parent)
     }
 
     //rufi
-    int ways = m_cacheSim->getWaysBits();
-    qDebug() << "Number of ways from cachewidget: " << ways;
-    keepWaysValue(m_cacheSim);
+    QWidget* typeOfCache = parent;
+    if(typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0){
+      int ways = m_cacheSim->getWaysBits();
+      //qDebug() << "Number of ways from data cachewidget: " << ways;
+      saveNbDataWays(m_cacheSim);
+      saveNbDataLines(m_cacheSim);
+    }
+    if(typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0){
+      int ways = m_cacheSim->getWaysBits();
+      qDebug() << "Number of ways from instruction cachewidget: " << ways;
+      saveNbInstrWays(m_cacheSim);
+    }
   });
 }
 
