@@ -38,13 +38,16 @@ CacheWidget::CacheWidget(QWidget *parent)
     if(typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0){
       int ways = m_cacheSim->getWaysBits();
       //qDebug() << "Number of ways from data cachewidget: " << ways;
-      saveNbDataWays(m_cacheSim);
-      saveNbDataLines(m_cacheSim);
+      saveNbWaysDataCache(m_cacheSim);
+      saveNbLinesDataCache(m_cacheSim);
+      saveNbBlocksDataCache(m_cacheSim);
     }
     if(typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0){
       int ways = m_cacheSim->getWaysBits();
       qDebug() << "Number of ways from instruction cachewidget: " << ways;
-      saveNbInstrWays(m_cacheSim);
+      saveNbWaysInstrCache(m_cacheSim);
+      saveNbLinesInstrCache(m_cacheSim);
+      saveNbBlocksInstrCache(m_cacheSim);
     }
   });
 }

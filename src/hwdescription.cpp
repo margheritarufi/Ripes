@@ -6,20 +6,15 @@
 #include "processorhandler.h"
 #include <QInputDialog>
 #include <iomanip>
-#include "cachesim/cachesim.h"
-#include "cachetabwidget.h"
-#include "cachetab.h"
 #include "hwdescriptioncache.h"
 
-
 //no Ripes namespace because otherwise I get LNK2019 error when I use QDir
-Ripes::ProcessorID thisID; //& = Ripes::ProcessorHandler::getID();
-QString QcurrentID; // = getProcessorType();
-std::string currentID; // = QcurrentID.toStdString();
+Ripes::ProcessorID thisID;
+QString QcurrentID;
+std::string currentID;
 std::string selectedDirectory;
 std::string folderName;
 std::shared_ptr<std::ofstream> paramsFile;
-//std::ofstream paramsFile;
 
 void downloadFiles(){
   const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID();
@@ -28,7 +23,6 @@ void downloadFiles(){
   currentID = QcurrentID.toStdString();
   QString selectedPath = openDirectoryDialog();
   QString QfolderName = createDirectory(selectedPath);
-  //collectParameters();
   paramsFile = createParamsFile(selectedPath, QfolderName);
   writeProcessorType(paramsFile);
   writeNbStages(paramsFile);
@@ -36,8 +30,7 @@ void downloadFiles(){
   writeFwHz(paramsFile);
   //writeRegsInitialValues(); //better to write them one by one or create an xml?
   //writeActivePeripherals();
-  //writeInstrCacheSettings(); //instr and data
-  writeDataCacheSettings(paramsFile);
+  writeCacheSettings(paramsFile);
   //writeMemoryMap();
 }
 
@@ -129,16 +122,6 @@ void writeFwHz(std::shared_ptr<std::ofstream> file){
     std::cerr << "Ripes couldn't open params.vh to write the processor ID" << std::endl;
   }
 }
-
-
-
-//void writeInstrCacheSettings(){
-//std::shared_ptr<Ripes::CacheSim> instrCachePtr = Ui::CacheTabWidget::m_ui->instructionCacheWidget->getCacheSim();
-//int ways = instrCachePtr->getWays();
-//Ripes::CacheSim cacheSim;  // Create an instance of the CacheSim class
-// You can now use the cacheSim object to access the getWays() function
-//int ways = cacheSim.getWays();
-//}
 
 QString getNbStages(Ripes::ProcessorID ID) {
   switch (ID) {
