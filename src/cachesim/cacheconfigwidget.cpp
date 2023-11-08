@@ -12,22 +12,23 @@
 #include "enumcombobox.h"
 #include "ripessettings.h"
 
-//rufi
+// rufi
+#include "hwdescriptioncache.h"
 #include <QDebug>
 #include <QWidget>
-#include "hwdescriptioncache.h"
 
 namespace Ripes {
 
-//rufi
-QWidget* typeOfCache;
+// rufi
+QWidget *typeOfCache;
 
 CacheConfigWidget::CacheConfigWidget(QWidget *parent)
     : QWidget(parent), m_ui(new Ui::CacheConfigWidget) {
   m_ui->setupUi(this);
 
-  //rufi
-  typeOfCache = parent; //The parent of typeOfCache is either a QWidget tab (data cache) or QWidget tab_2 (instruction cache)
+  // rufi
+  typeOfCache = parent; // The parent of typeOfCache is either a QWidget tab
+                        // (data cache) or QWidget tab_2 (instruction cache)
 
   // Gather a list of all items in this widget which will trigger a modification
   // to the current configuration
@@ -47,24 +48,32 @@ void CacheConfigWidget::setCache(const std::shared_ptr<CacheSim> &cache) {
   m_ui->lines->setValue(m_cache->getLineBits());
   m_ui->blocks->setValue(m_cache->getBlockBits());
 
-  //rufi
+  // rufi
   qDebug() << "name:" << typeOfCache->parent()->objectName();
-  if(typeOfCache->parent()->objectName().compare("tab", Qt::CaseInsensitive) == 0){
-  qDebug() << "Initial number of ways of data cache: " << m_cache->getWaysBits();
-  qDebug() << "Initial number of lines of data cache: " << m_cache->getLineBits();
-  qDebug() << "Initial number of blocks of data cache: " << m_cache->getBlockBits();
-  saveNbWaysDataCache(m_cache);
-  saveNbLinesDataCache(m_cache);
-  saveNbBlocksDataCache(m_cache);
+  if (typeOfCache->parent()->objectName().compare("tab", Qt::CaseInsensitive) ==
+      0) {
+    qDebug() << "Initial number of ways of data cache: "
+             << m_cache->getWaysBits();
+    qDebug() << "Initial number of lines of data cache: "
+             << m_cache->getLineBits();
+    qDebug() << "Initial number of blocks of data cache: "
+             << m_cache->getBlockBits();
+    saveNbWaysDataCache(m_cache);
+    saveNbLinesDataCache(m_cache);
+    saveNbBlocksDataCache(m_cache);
   }
 
-  if(typeOfCache->parent()->objectName().compare("tab_2", Qt::CaseInsensitive) == 0){
-  qDebug() << "Initial number of ways of instr cache: " << m_cache->getWaysBits();
-  qDebug() << "Initial number of lines of instr cache: " << m_cache->getLineBits();
-  qDebug() << "Initial number of blocks of instr cache: " << m_cache->getBlockBits();
-  saveNbWaysInstrCache(m_cache);
-  saveNbLinesInstrCache(m_cache);
-  saveNbBlocksInstrCache(m_cache);
+  if (typeOfCache->parent()->objectName().compare("tab_2",
+                                                  Qt::CaseInsensitive) == 0) {
+    qDebug() << "Initial number of ways of instr cache: "
+             << m_cache->getWaysBits();
+    qDebug() << "Initial number of lines of instr cache: "
+             << m_cache->getLineBits();
+    qDebug() << "Initial number of blocks of instr cache: "
+             << m_cache->getBlockBits();
+    saveNbWaysInstrCache(m_cache);
+    saveNbLinesInstrCache(m_cache);
+    saveNbBlocksInstrCache(m_cache);
   }
   /*******/
 

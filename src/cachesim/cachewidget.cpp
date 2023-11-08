@@ -8,9 +8,9 @@
 #include "cacheview.h"
 #include "ripessettings.h"
 
+#include "../cachetabwidget.h"
 #include "../hwdescriptioncache.h" //rufi
 #include <QDebug>
-#include "../cachetabwidget.h"
 
 namespace Ripes {
 
@@ -33,16 +33,16 @@ CacheWidget::CacheWidget(QWidget *parent)
       static_cast<CacheView *>(cacheViews.at(0))->fitScene();
     }
 
-    //rufi
-    QWidget* typeOfCache = parent;
-    if(typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0){
+    // rufi
+    QWidget *typeOfCache = parent;
+    if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
       int ways = m_cacheSim->getWaysBits();
-      //qDebug() << "Number of ways from data cachewidget: " << ways;
+      // qDebug() << "Number of ways from data cachewidget: " << ways;
       saveNbWaysDataCache(m_cacheSim);
       saveNbLinesDataCache(m_cacheSim);
       saveNbBlocksDataCache(m_cacheSim);
     }
-    if(typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0){
+    if (typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0) {
       int ways = m_cacheSim->getWaysBits();
       qDebug() << "Number of ways from instruction cachewidget: " << ways;
       saveNbWaysInstrCache(m_cacheSim);

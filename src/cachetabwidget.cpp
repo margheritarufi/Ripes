@@ -8,7 +8,7 @@
 #include <QTabBar>
 #include <QWheelEvent>
 
-//rufi
+// rufi
 #include <QDebug>
 
 namespace Ripes {
@@ -115,7 +115,7 @@ void CacheTabWidget::handleTabIndexChanged(int index) {
     m_addTabIdx = m_ui->tabWidget->count() - 1;
     m_ui->tabWidget->setCurrentIndex(index);
 
-    //rufi
+    // rufi
     int currentIndex = m_ui->tabWidget->currentIndex();
     /*if (currentIndex >= 0) {
       QString tabText = m_ui->tabWidget->tabBar()->tabText(currentIndex);
@@ -124,8 +124,9 @@ void CacheTabWidget::handleTabIndexChanged(int index) {
       // Handle the case where no tab is selected.
     }
 
-   QString tabText = m_ui->tabText(currentIndex); // Get the text label of the active tab.
-   QWidget* tabWidget = yourTabWidget->widget(currentIndex); // Get the widget associated with the active tab.
+   QString tabText = m_ui->tabText(currentIndex); // Get the text label of the
+   active tab. QWidget* tabWidget = yourTabWidget->widget(currentIndex); // Get
+   the widget associated with the active tab.
    */
     qDebug() << "Cache tab index: " << currentIndex;
   }
