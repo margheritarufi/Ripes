@@ -397,6 +397,9 @@ void ProcessorTab::
                                       diag.getEnabledExtensions(),
                                       diag.getRegisterInitialization());
 
+    //rufi
+    regsInitForHwDescription = diag.getRegisterInitialization();
+
            // Store selected layout index
     const auto &layouts =
         ProcessorRegistry::getDescription(diag.getSelectedId()).layouts;

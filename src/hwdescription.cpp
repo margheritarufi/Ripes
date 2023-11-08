@@ -15,10 +15,16 @@ std::string currentID;
 std::string selectedDirectory;
 std::string folderName;
 std::shared_ptr<std::ofstream> paramsFile;
+std::shared_ptr<std::ofstream> regsFile;
+std::map<unsigned int, unsigned long long> regsInitForHwDescription;
+//extern Ripes::RegisterInitialization regsInitForHwDescription = Ripes::ProcessorRegistry::getDescription(globalID).defaultRegisterVals; //as it is called by _selectProcessor in processorhandler.cpp before launching the gui)
+
 
 void downloadFiles() {
   const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID();
+  //const Ripes::RegisterInitialization &setup = Ripes::RegisterInitialization(); 0 ITEMS
   thisID = ID;
+  //globalID = thisID;
   QcurrentID = getProcessorType();
   currentID = QcurrentID.toStdString();
   QString selectedPath = openDirectoryDialog();
@@ -28,7 +34,9 @@ void downloadFiles() {
   writeNbStages(paramsFile);
   writeWidth(paramsFile);
   writeFwHz(paramsFile);
-  // writeRegsInitialValues(); //better to write them one by one or create an
+  //writeISAExtension();
+  regsFile = createRegsFile();
+  writeRegsInitialValues(regsFile);
   // xml? writeActivePeripherals();
   writeCacheSettings(paramsFile);
   // writeMemoryMap();
@@ -142,6 +150,54 @@ void writeFwHz(std::shared_ptr<std::ofstream> file) {
   } else {
     std::cerr << "Ripes couldn't open params.vh to write the processor ID"
               << std::endl;
+  }
+}
+
+std::shared_ptr<std::ofstream> createRegsFile(){
+  auto file = std::make_shared<std::ofstream>(
+      selectedDirectory + "/" + folderName + "/registerfile.xml", std::ios::app);
+
+  if (file->is_open()) {
+    (*file) << "<<!--This file describes the register file at its initial status -->"
+            << std::endl;
+    // file.close();
+    std::cout << "registerfile.xml created successfully." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open registerfile.xml" << std::endl;
+  }
+
+  return file;
+}
+
+void writeRegsInitialValues(std::shared_ptr<std::ofstream> file){
+  Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
+  qDebug() << "Just for breakpoint";
+
+  // Generate the XML content
+  if (file->is_open()) {
+  (*file) << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+  (*file) << "<register_file>" << std::endl;
+  (*file) << "  <name>RegisterFile</name>" << std::endl;
+  (*file) << "  <description>Initial status of the register file of the processor</description>" << std::endl;
+  (*file) << "  <registers>" << std::endl;
+
+         // Create individual register elements
+  for (int i = 0; i < 32; i++) {
+    if (regsInitForHwDescription[i]!=0){
+      (*file) << "    <register>" << std::endl;
+      (*file) << "      <name>x" << i << "</name>" << std::endl;
+      (*file) << "      <alias>alias name</alias>" << std::endl;
+      (*file) << "      <address>0x" << std::hex << i * 4 << "</address>" << std::endl; //??????
+      (*file) << "      <value>0x" << regsInitForHwDescription[i] << "</value>" << std::endl;
+      (*file) << "    </register>" << std::endl;
+    }
+  }
+
+  (*file) << "  </registers>" << std::endl;
+  (*file) << "</register_file>" << std::endl;
+
+         // Close the file
+  (*file).close();
   }
 }
 
