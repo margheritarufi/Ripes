@@ -3,25 +3,25 @@
 #include "processortab.h"
 #include <QDebug>
 #include <QFileDialog>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
-//namespace Ripes {
-  void downloadFiles();
-  QString openDirectoryDialog();
-  QString getProcessorType();
-  QString createDirectory(QString directoryPath);
-  std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath, QString QfolderName);
-  void writeProcessorType(std::shared_ptr<std::ofstream> file);
-  void writeNbStages(std::shared_ptr<std::ofstream> file);
-  void writeWidth(std::shared_ptr<std::ofstream> file);
-  void writeFwHz(std::shared_ptr<std::ofstream> file);
-  QString getNbStages(Ripes::ProcessorID ID);
-  QString getWidth(Ripes::ProcessorID ID);
-  QString getFw(Ripes::ProcessorID ID);
-  QString getHazard(Ripes::ProcessorID ID);
-  QString processorIDToQString(Ripes::ProcessorID ID);
-
+// namespace Ripes {
+void downloadFiles();
+QString openDirectoryDialog();
+QString getProcessorType();
+QString createDirectory(QString directoryPath);
+std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath,
+                                                QString QfolderName);
+void writeProcessorType(std::shared_ptr<std::ofstream> file);
+void writeNbStages(std::shared_ptr<std::ofstream> file);
+void writeWidth(std::shared_ptr<std::ofstream> file);
+void writeFwHz(std::shared_ptr<std::ofstream> file);
+QString getNbStages(Ripes::ProcessorID ID);
+QString getWidth(Ripes::ProcessorID ID);
+QString getFw(Ripes::ProcessorID ID);
+QString getHazard(Ripes::ProcessorID ID);
+QString processorIDToQString(Ripes::ProcessorID ID);
 
 /*class HwDescription : public QObject {
   Q_OBJECT
@@ -33,7 +33,6 @@ public:
 public slots:
   void OpenFileDialog();
 };*/
-
 
 //}
 
@@ -49,11 +48,14 @@ void collectParams() {
 }
 
 void OpenFileDialog(){
-  QString selectedDirectory = QFileDialog::getExistingDirectory(ProcessorTab, "Select a destination folder", QDir::homePath());
+  QString selectedDirectory = QFileDialog::getExistingDirectory(ProcessorTab,
+"Select a destination folder", QDir::homePath());
 
   if (!selectedDirectory.isEmpty()) {
-      // Utilizza selectedDirectory per gestire il percorso della cartella selezionata
-      // Ad esempio, puoi salvarlo in una variabile o utilizzarlo per il tuo codice
+      // Utilizza selectedDirectory per gestire il percorso della cartella
+selezionata
+      // Ad esempio, puoi salvarlo in una variabile o utilizzarlo per il tuo
+codice
       // che produce i file.
       // Esempio:
     qDebug() << "Cartella selezionata: " << selectedDirectory;
@@ -65,41 +67,43 @@ void OpenFileDialog(){
   std::ofstream file(nomeFile);
 
   if (file.is_open()) {
-    file << "//These are automatically-generated parameters. The designer cannot change them because they depend on th user's choice of the processor" << std::endl;
+    file << "//These are automatically-generated parameters. The designer cannot
+change them because they depend on th user's choice of the processor" <<
+std::endl;
 
     file.close();
 
-    std::cout << "File 'params.vh' creato o sovrascritto con successo." << std::endl;
-    } else {
-    std::cerr << "Impossibile aprire il file 'params.vh'." << std::endl;
+    std::cout << "File 'params.vh' creato o sovrascritto con successo." <<
+std::endl; } else { std::cerr << "Impossibile aprire il file 'params.vh'." <<
+std::endl;
     }*/
 
-  /*switch(ID){
-  case RV32_SS:
+/*switch(ID){
+case RV32_SS:
 
-  case RV32_5S_NO_FW_HZ:
+case RV32_5S_NO_FW_HZ:
 
-  case RV32_5S_NO_HZ:
+case RV32_5S_NO_HZ:
 
-  case RV32_5S_NO_FW:
+case RV32_5S_NO_FW:
 
-  case RV32_5S:
+case RV32_5S:
 
-  case RV32_6S_DUAL:
+case RV32_6S_DUAL:
 
-  case RV64_SS:
+case RV64_SS:
 
-  case RV64_5S_NO_FW_HZ:
+case RV64_5S_NO_FW_HZ:
 
-  case RV64_5S_NO_HZ:
+case RV64_5S_NO_HZ:
 
-  case RV64_5S_NO_FW:
+case RV64_5S_NO_FW:
 
-  case RV64_5S:
+case RV64_5S:
 
-  case RV64_6S_DUAL:
+case RV64_6S_DUAL:
 
-  }*/
+}*/
 //}
 
 /*Inspirations:

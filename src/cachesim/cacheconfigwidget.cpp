@@ -75,6 +75,10 @@ void CacheConfigWidget::setCache(const std::shared_ptr<CacheSim> &cache) {
 
   setupPresets();
   handleConfigurationChanged();
+
+  //called twice (1 for cache type) befaore launching the GUI
+  //int ways = m_cache->getWaysBits();
+  //qDebug() << "Number of ways: " << ways;
 }
 
 void CacheConfigWidget::storePreset() {

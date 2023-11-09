@@ -8,6 +8,8 @@
 #include "cacheview.h"
 #include "ripessettings.h"
 
+#include "hwdescriptioncache.h" //rufi
+
 namespace Ripes {
 
 CacheWidget::CacheWidget(QWidget *parent)
@@ -28,6 +30,11 @@ CacheWidget::CacheWidget(QWidget *parent)
     if (cacheViews.size() > 0) {
       static_cast<CacheView *>(cacheViews.at(0))->fitScene();
     }
+
+    //rufi
+    int ways = m_cacheSim->getWaysBits();
+    qDebug() << "Number of ways from cachewidget: " << ways;
+    keepWaysValue(m_cacheSim);
   });
 }
 
