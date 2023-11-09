@@ -5,7 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 
-void keepWaysValue(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
+/*void keepWaysValue(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   int ways = cacheSimPtr->getWaysBits();
   qDebug() << "Nb of ways:" << ways;
-}
+}*/
