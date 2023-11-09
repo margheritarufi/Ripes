@@ -31,7 +31,7 @@ CacheWidget::CacheWidget(QWidget *parent)
       static_cast<CacheView *>(cacheViews.at(0))->fitScene();
     }
 
-    //rufi
+    // rufi
     int ways = m_cacheSim->getWaysBits();
     qDebug() << "Number of ways from cachewidget: " << ways;
     keepWaysValue(m_cacheSim);
