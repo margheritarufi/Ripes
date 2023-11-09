@@ -175,7 +175,9 @@ std::shared_ptr<std::ofstream> createRegsFile() {
 }
 
 void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
-  Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
+  Ripes::RegisterInitialization localRegsInit =
+      static_cast<Ripes::RegisterInitialization>(regsInitForHwDescription);
+  // Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
   qDebug() << "Just for breakpoint";
 
   // Generate the XML content
