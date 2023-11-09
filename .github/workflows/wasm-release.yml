@@ -102,6 +102,6 @@ jobs:
 
     # Dispatch the publish.yml workflow over at mortbopet.github.io
     - run: |
-        gh workflow run publish.yml -R mortbopet/mortbopet.github.io --ref master
+        gh workflow run publish.yml -R margheritarufi/mortbopet.github.io --ref master
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
