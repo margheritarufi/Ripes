@@ -8,7 +8,7 @@
 #include "cacheview.h"
 #include "ripessettings.h"
 
-#include "hwdescriptioncache.h" //rufi
+#include "../hwdescriptioncache.h" //rufi
 
 namespace Ripes {
 

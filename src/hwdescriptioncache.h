@@ -1,4 +1,4 @@
-#include "cachesim.h"
+#include "cachesim/cachesim.h"
 #include "processors/RISC-V/rv_memory.h"
 #include <QWidget>
 
