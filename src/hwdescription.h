@@ -4,12 +4,14 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include "ripes_types.h"
 
 // namespace Ripes {
 // extern Ripes::ProcessorID globalID;
 extern std::shared_ptr<std::ofstream> paramsFile;
-extern std::map<unsigned int, unsigned long long>
-    regsInitForHwDescription; // =
+extern std::map<unsigned int, Ripes::VInt> regsInitForHwDescription; //to try fix test.yml Ubuntu build action
+//extern std::map<unsigned int, unsigned long long>
+//    regsInitForHwDescription; // =
                               // Ripes::ProcessorRegistry::getDescription(globalID).defaultRegisterVals;
                               // //as it is called by _selectProcessor in
                               // processorhandler.cpp before launching the gui)
