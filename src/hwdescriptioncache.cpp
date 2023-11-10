@@ -14,6 +14,7 @@ int instr_ways;
 int instr_lines;
 int instr_blocks;
 
+
 void saveNbWaysDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   data_ways = cacheSimPtr->getWaysBits();
   qDebug() << "Number of ways in data cache:" << data_ways;
