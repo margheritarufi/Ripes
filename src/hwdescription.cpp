@@ -7,6 +7,7 @@
 #include <QFileDialog>
 #include <QInputDialog>
 #include <iomanip>
+#include "ripes_types.h"
 
 // no Ripes namespace because otherwise I get LNK2019 error when I use QDir
 Ripes::ProcessorID thisID;
@@ -16,7 +17,8 @@ std::string selectedDirectory;
 std::string folderName;
 std::shared_ptr<std::ofstream> paramsFile;
 std::shared_ptr<std::ofstream> regsFile;
-std::map<unsigned int, unsigned long long> regsInitForHwDescription;
+std::map<unsigned int, Ripes::VInt> regsInitForHwDescription; //to try fix test.yml Ubuntu build action
+//std::map<unsigned int, unsigned long long> regsInitForHwDescription;
 // extern Ripes::RegisterInitialization regsInitForHwDescription =
 // Ripes::ProcessorRegistry::getDescription(globalID).defaultRegisterVals; //as
 // it is called by _selectProcessor in processorhandler.cpp before launching the
@@ -175,9 +177,9 @@ std::shared_ptr<std::ofstream> createRegsFile() {
 }
 
 void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
-  Ripes::RegisterInitialization localRegsInit =
-      static_cast<Ripes::RegisterInitialization>(regsInitForHwDescription);
-  // Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
+  //Ripes::RegisterInitialization localRegsInit =
+  //    static_cast<Ripes::RegisterInitialization>(regsInitForHwDescription);
+  Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
   qDebug() << "Just for breakpoint";
 
   // Generate the XML content
