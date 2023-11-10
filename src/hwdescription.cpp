@@ -2,12 +2,12 @@
 #include "hwdescriptioncache.h"
 #include "processorhandler.h"
 #include "processorregistry.h"
+#include "ripes_types.h"
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <iomanip>
-#include "ripes_types.h"
 
 // no Ripes namespace because otherwise I get LNK2019 error when I use QDir
 Ripes::ProcessorID thisID;
@@ -17,12 +17,8 @@ std::string selectedDirectory;
 std::string folderName;
 std::shared_ptr<std::ofstream> paramsFile;
 std::shared_ptr<std::ofstream> regsFile;
-std::map<unsigned int, Ripes::VInt> regsInitForHwDescription; //to try fix test.yml Ubuntu build action
-//std::map<unsigned int, unsigned long long> regsInitForHwDescription;
-// extern Ripes::RegisterInitialization regsInitForHwDescription =
-// Ripes::ProcessorRegistry::getDescription(globalID).defaultRegisterVals; //as
-// it is called by _selectProcessor in processorhandler.cpp before launching the
-// gui)
+std::map<unsigned int, Ripes::VInt>
+    regsInitForHwDescription; // See .h file for info about the type
 
 void downloadFiles() {
   const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID();
@@ -39,7 +35,7 @@ void downloadFiles() {
   writeNbStages(paramsFile);
   writeWidth(paramsFile);
   writeFwHz(paramsFile);
-  // writeISAExtension();
+  writeISAExtension(paramsFile);
   regsFile = createRegsFile();
   writeRegsInitialValues(regsFile);
   // xml? writeActivePeripherals();
@@ -121,9 +117,10 @@ void writeNbStages(std::shared_ptr<std::ofstream> file) {
     (*file) << "`define " << std::left << std::setw(15) << "NB_STAGES "
             << getNbStages(thisID).toStdString() << std::right << std::setw(35)
             << " //Possible values: 1, 5, 6" << std::endl;
-    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+    std::cout << "Number of stages successfully written in params.vh."
+              << std::endl;
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the processor ID"
+    std::cerr << "Ripes couldn't open params.vh to write the number of stages"
               << std::endl;
   }
 }
@@ -136,9 +133,12 @@ void writeWidth(std::shared_ptr<std::ofstream> file) {
     (*file) << "`define " << std::left << std::setw(15) << "ADDR_WIDTH "
             << getWidth(thisID).toStdString() << std::right << std::setw(35)
             << " //Possible values: 32, 64" << std::endl;
-    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+    std::cout
+        << "Width of data and addresses successfully written in params.vh."
+        << std::endl;
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the processor ID"
+    std::cerr << "Ripes couldn't open params.vh to write the width of data and "
+                 "addresses"
               << std::endl;
   }
 }
@@ -151,9 +151,30 @@ void writeFwHz(std::shared_ptr<std::ofstream> file) {
     (*file) << "`define " << std::left << std::setw(15) << "HZ_DETECT "
             << getHazard(thisID).toStdString() << std::right << std::setw(35)
             << " //Possible values: 1/0 : yes/no" << std::endl;
-    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+    std::cout << "Forwarding Path and Hazard Detection Unit parameters "
+                 "successfully written in params.vh."
+              << std::endl;
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the processor ID"
+    std::cerr << "Ripes couldn't open params.vh to write the Forwarding Path "
+                 "and Hazard Detection Unit parameters"
+              << std::endl;
+  }
+}
+
+void writeISAExtension(std::shared_ptr<std::ofstream> file) {
+  QString QISAname =
+      Ripes::ProcessorHandler::getProcessor()->implementsISA()->name();
+  std::string exstensionCode = getISAExtension(QISAname);
+  if (file->is_open()) {
+    (*file) << "`define " << std::left << std::setw(15) << "EXTENSION "
+            << exstensionCode << std::right << std::setw(35)
+            << " //Possible values: 00, 01, 10, 11 (MC extensions: 1=enabled, "
+               "0=disabled)"
+            << std::endl;
+    std::cout << "ISA extension code successfully written in params.vh."
+              << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the ISA extension code"
               << std::endl;
   }
 }
@@ -170,15 +191,13 @@ std::shared_ptr<std::ofstream> createRegsFile() {
     // file.close();
     std::cout << "registerfile.xml created successfully." << std::endl;
   } else {
-    std::cerr << "Ripes couldn't open registerfile.xml" << std::endl;
+    std::cerr << "Ripes couldn't create registerfile.xml" << std::endl;
   }
 
   return file;
 }
 
 void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
-  //Ripes::RegisterInitialization localRegsInit =
-  //    static_cast<Ripes::RegisterInitialization>(regsInitForHwDescription);
   Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
   qDebug() << "Just for breakpoint";
 
@@ -197,9 +216,8 @@ void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
       if (regsInitForHwDescription[i] != 0) {
         (*file) << "    <register>" << std::endl;
         (*file) << "      <name>x" << i << "</name>" << std::endl;
-        (*file) << "      <alias>alias name</alias>" << std::endl;
-        (*file) << "      <address>0x" << std::hex << i * 4 << "</address>"
-                << std::endl; //??????
+        (*file) << "      <alias>" << getAliasRegName(i) << "</alias>"
+                << std::endl;
         (*file) << "      <value>0x" << regsInitForHwDescription[i]
                 << "</value>" << std::endl;
         (*file) << "    </register>" << std::endl;
@@ -211,6 +229,8 @@ void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
 
     // Close the file
     (*file).close();
+  } else {
+    std::cerr << "Ripes couldn't open registerfile.xml" << std::endl;
   }
 }
 
@@ -353,4 +373,29 @@ QString processorIDToQString(Ripes::ProcessorID ID) {
   default:
     return "Unknown Processor ID";
   }
+}
+
+std::string getISAExtension(QString ISAname) {
+  if (ISAname == "RV32I" || ISAname == "RV64I") {
+    return "00";
+  } else if (ISAname == "RV32IM" || ISAname == "RV64IM") {
+    return "10";
+  } else if (ISAname == "RV32IC" || ISAname == "RV64IC") {
+    return "01";
+  } else if (ISAname == "RV32IMC" || ISAname == "RV64IMC") {
+    return "11";
+  } else {
+    std::cerr << "Non-supported RISC-V extension: " << ISAname.toStdString()
+              << ". Supported extensions: Integer multiplication and division "
+                 "(M) and Compressed Instructions (C)"
+              << std::endl;
+    return "err";
+  }
+}
+
+std::string getAliasRegName(int i) {
+  const auto &isa = Ripes::ProcessorHandler::currentISA();
+  QString QaliasName = isa->regAlias(i);
+  std::string aliasName = QaliasName.toStdString();
+  return aliasName;
 }
