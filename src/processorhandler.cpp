@@ -15,9 +15,6 @@
 #include <QMessageBox>
 #include <QtConcurrent/QtConcurrent>
 
-// rufi
-#include "hwdescription.h"
-
 namespace Ripes {
 
 ProcessorHandler::ProcessorHandler() {
@@ -50,10 +47,6 @@ ProcessorHandler::ProcessorHandler() {
   _selectProcessor(
       m_currentID, extensions,
       ProcessorRegistry::getDescription(m_currentID).defaultRegisterVals);
-
-  // rufi
-  regsInitForHwDescription =
-      Ripes::ProcessorRegistry::getDescription(m_currentID).defaultRegisterVals;
 
   // The m_procStateChangeTimer limits maximum frequency of which the
   // procStateChangedNonRun is emitted.

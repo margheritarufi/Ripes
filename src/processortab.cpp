@@ -160,6 +160,16 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
 
   // Initially, no file is loaded, disable toolbuttons
   enableSimulatorControls();
+
+  // rufi
+  //  Note that this ProcessorTab constructor is called before the launch of
+  //  Ripes GUI, so the values saved here in the regsInitForHwDescription
+  //  variable are the default ones, they are not chosen by the user. It will be
+  //  used to write registerfile.xml
+  regsInitForHwDescription =
+      Ripes::ProcessorRegistry::getDescription(Ripes::ProcessorHandler::getID())
+          .defaultRegisterVals;
+  // end rufi
 }
 
 void ProcessorTab::loadLayout(const Layout &layout) {
@@ -304,12 +314,15 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
       RipesSettings::value(RIPES_SETTING_DARKMODE).toBool());
 
   // rufi
+  // Add the icon in the toolbar to download the hw description files
+  // and connect it to the function downloadHwDescription()
   const QIcon hwIcon = QIcon(":/icons/downloadHwDescription.svg");
   m_downloadHwDescriptionAction =
       new QAction(hwIcon, "Download HW description files", this);
   connect(m_downloadHwDescriptionAction, &QAction::triggered, this,
           &ProcessorTab::downloadHwDescription);
   m_toolbar->addAction(m_downloadHwDescriptionAction);
+  // end rufi
 }
 
 void ProcessorTab::updateStatistics() {
@@ -398,7 +411,14 @@ void ProcessorTab::
                                       diag.getRegisterInitialization());
 
     // rufi
+    // Get the initial values of the registers.
+    // Note that this code section is executed any time the user changes the
+    // the inital register values from the Select Processor window (Register
+    // Initialization section). Therefore, the cache parameters saved
+    // in the following regsInitForHwDescription variable overwrite the default
+    // ones. It will be used to write registerfile.xml
     regsInitForHwDescription = diag.getRegisterInitialization();
+    // end rufi
 
     // Store selected layout index
     const auto &layouts =
@@ -614,11 +634,6 @@ void ProcessorTab::showPipelineDiagram() {
 }
 
 // rufi
-void ProcessorTab::downloadHwDescription() {
-  qDebug() << "Ho premuto l'icona hw";
-  downloadFiles();
-  /*Ripes::HwDescription hwDescription;
-  hwDescription.OpenFileDialog();*/
-}
+void ProcessorTab::downloadHwDescription() { downloadFiles(); }
 
 } // namespace Ripes

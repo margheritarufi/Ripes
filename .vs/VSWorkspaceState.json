@@ -7,8 +7,9 @@
   },
   "ExpandedNodes": [
     "",
+    "\\src",
     "\\src\\cachesim"
   ],
-  "SelectedNode": "\\main.cpp",
+  "SelectedNode": "\\src\\hwdescription.cpp",
   "PreviewInSolutionExplorer": false
 }

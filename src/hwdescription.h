@@ -2,12 +2,13 @@
 #include "ripes_types.h"
 #include <QDebug>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QMessageBox>
 #include <fstream>
 #include <iostream>
 #include <map>
 
 // namespace Ripes {
-// extern Ripes::ProcessorID globalID;
 extern std::shared_ptr<std::ofstream> paramsFile;
 extern std::map<unsigned int, Ripes::VInt>
     regsInitForHwDescription; // This type is equivalent to extern
@@ -18,7 +19,7 @@ extern std::map<unsigned int, Ripes::VInt>
 void downloadFiles();
 QString openDirectoryDialog();
 QString getProcessorType();
-QString createDirectory(QString directoryPath);
+QString createFolder(QString directoryPath);
 std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath,
                                                 QString QfolderName);
 void writeProcessorType(std::shared_ptr<std::ofstream> file);
@@ -35,3 +36,5 @@ QString getHazard(Ripes::ProcessorID ID);
 QString processorIDToQString(Ripes::ProcessorID ID);
 std::string getISAExtension(QString ISAname);
 std::string getAliasRegName(int i);
+QString createDialogFolderName(QInputDialog &inputDialog);
+int createWarningBox(QMessageBox &msgBox, QString localQfolderName);
