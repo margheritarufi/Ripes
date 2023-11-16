@@ -6,6 +6,7 @@
 
 #include "hwdescription.h"
 #include "hwdescriptioncache.h"
+#include "io/iomanager.h"
 #include "processorhandler.h"
 #include "processorregistry.h"
 #include "ripes_types.h"
@@ -25,6 +26,7 @@ std::string selectedDirectory;
 std::string folderName;
 std::shared_ptr<std::ofstream> paramsFile;
 std::shared_ptr<std::ofstream> regsFile;
+std::shared_ptr<std::ofstream> memoryMapFile;
 std::map<unsigned int, Ripes::VInt>
     regsInitForHwDescription; // See .h file for info about the type
 
@@ -54,11 +56,13 @@ void downloadFiles() {
       writeWidth(paramsFile);
       writeFwHz(paramsFile);
       writeISAExtension(paramsFile);
+      writeNbPeriph(paramsFile);
       regsFile = createRegsFile();
       writeRegsInitialValues(regsFile);
       // xml? writeActivePeripherals();
       writeCacheSettings(paramsFile);
-      // writeMemoryMap();
+      memoryMapFile = createMemoryMapFile();
+      writeMemoryMap(memoryMapFile);
     }
   }
 }
@@ -350,12 +354,11 @@ std::shared_ptr<std::ofstream> createRegsFile() {
 // "registerfile.xml" file
 void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
   Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
-  qDebug() << "Just for breakpoint";
 
   // Generate the XML content
   if (file->is_open()) {
     (*file) << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-    (*file) << "<register_file>" << std::endl;
+    (*file) << "<registerfile>" << std::endl;
     (*file) << "  <name>RegisterFile</name>" << std::endl;
     (*file) << "  <description>Initial status of the register file of the "
                "processor</description>"
@@ -382,6 +385,122 @@ void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
     (*file).close();
   } else {
     std::cerr << "Ripes couldn't open registerfile.xml" << std::endl;
+  }
+}
+
+std::shared_ptr<std::ofstream> createMemoryMapFile() {
+  // Create the memorymap.xml file
+  auto file = std::make_shared<std::ofstream>(
+      selectedDirectory + "/" + folderName + "/memorymap.xml", std::ios::out);
+
+  // Write a presentation comment in the file
+  if (file->is_open()) {
+    (*file) << "<<!--This file describes the memory map -->" << std::endl;
+    // file.close();
+    std::cout << "memorymap.xml created successfully." << std::endl;
+  } else {
+    std::cerr << "Ripes couldn't create memorymap.xml" << std::endl;
+  }
+  return file;
+}
+
+void writeMemoryMap(std::shared_ptr<std::ofstream> file) {
+  const Ripes::MemoryMap *myMemMap = &Ripes::IOManager::get().memoryMap();
+
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
+
+  // Generate the XML content
+  if (file->is_open()) {
+    (*file) << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+    (*file) << "<memorymap>" << std::endl;
+    (*file) << "  <name>MemoryMap</name>" << std::endl;
+    (*file) << "  <description>Memory map with name of memory section, start "
+               "address, size, type of access"
+            << std::endl;
+    (*file) << "  <memory_regions>" << std::endl;
+
+    // Create individual memory region elements
+    for (const auto &entry : *myMemMap) {
+      (*file) << "    <region>" << std::endl;
+      (*file) << "      <name>" << entry.second.name.toStdString() << "</name>"
+              << std::endl;
+      (*file) << "      <start_address>x" << std::hex << entry.second.startAddr
+              << "</start_address>" << std::endl;
+      (*file) << "      <size>" << std::dec << entry.second.size << "</size>"
+              << std::endl;
+      (*file) << "      <access>"
+              << "ACCESS"
+              << "</access>" << std::endl;
+      if (entry.second.name.toStdString() == "led") {
+        (*file) << "      <height>" << std::dec << "PARAM"
+                << "</height>" << std::endl;
+        (*file) << "      <width>" << std::dec << "PARAM"
+                << "</width>" << std::endl;
+        (*file) << "      <LEDsize>" << std::dec << "PARAM"
+                << "</LEDsize>" << std::endl;
+      }
+      (*file) << "    </region>" << std::endl;
+    }
+
+    (*file) << "  </memory_regions>" << std::endl;
+    (*file) << "</memorymap>" << std::endl;
+
+    // Close the file
+    (*file).close();
+  } else {
+    std::cerr << "Ripes couldn't open memorymap.xml" << std::endl;
+  }
+}
+
+void writeNbPeriph(std::shared_ptr<std::ofstream> file) {
+  nbPeripheralsStruct counters;
+  counters.ledArraysCounter = 0;
+  counters.switchesCounter = 0;
+  counters.dpadsCounter = 0;
+  bool nbLedsAlreadyWritten = false;
+  bool nbSwitchesAlreadyWritten = false;
+  bool nbDpadsAlreadyWritten = false;
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
+  for (const Ripes::IOBase *peripheral : activePeripherals) {
+    if (peripheral->baseName() == "LED Matrix") {
+      counters.ledArraysCounter++;
+    }
+    if (peripheral->baseName() == "Switches") {
+      counters.switchesCounter++;
+    }
+    if (peripheral->baseName() == "D-Pad") {
+      counters.dpadsCounter++;
+    }
+    /*qDebug() << peripheral->name();
+    qDebug() << peripheral->baseName();
+    qDebug() << peripheral->getm_id();
+    auto params = peripheral->getParams();
+    qDebug() << "Just for breakpoint";*/
+  }
+  if (file->is_open()) {
+    (*file) << "`define " << std::left << std::setw(15) << "NB_LED_MATRICES "
+            << counters.ledArraysCounter << std::right << std::setw(35)
+            << " //Maximum value: " << std::endl;
+    std::cout
+        << "Number of active LED matrices successfully written in params.vh."
+        << std::endl;
+    (*file) << "`define " << std::left << std::setw(15) << "NB_SWITCH_SETS "
+            << counters.switchesCounter << std::right << std::setw(35)
+            << " //Maximum value: " << std::endl;
+    std::cout
+        << "Number of active switch sets successfully written in params.vh."
+        << std::endl;
+    nbSwitchesAlreadyWritten = true;
+    (*file) << "`define " << std::left << std::setw(15) << "NB_DPADS "
+            << counters.dpadsCounter << std::right << std::setw(35)
+            << " //Maximum value: " << std::endl;
+    std::cout << "Number of active D-Pads successfully written in params.vh."
+              << std::endl;
+    nbDpadsAlreadyWritten = true;
+  } else {
+    std::cerr << "Ripes couldn't open params.vh to write the number of active "
+                 "peripherals"
+              << std::endl;
   }
 }
 

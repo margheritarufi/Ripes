@@ -160,6 +160,16 @@ public:
     }
   }
 
+  //rufi
+  std::map<unsigned, IOParam> getParams() const {
+    return m_parameters;
+  }
+
+  unsigned getm_id() const {
+    return m_id;
+  }
+  //end rufi
+
 signals:
   /**
    * @brief regMapChanged
