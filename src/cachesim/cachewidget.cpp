@@ -33,24 +33,12 @@ CacheWidget::CacheWidget(QWidget *parent)
   // ones, they are not chosen by the user.
   QWidget *typeOfCache = parent;
   if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
-    qDebug() << "Initial number of ways of data cache: "
-             << m_cacheSim->getWaysBits();
-    qDebug() << "Initial number of lines of data cache: "
-             << m_cacheSim->getLineBits();
-    qDebug() << "Initial number of blocks of data cache: "
-             << m_cacheSim->getBlockBits();
     saveNbWaysDataCache(m_cacheSim);
     saveNbLinesDataCache(m_cacheSim);
     saveNbBlocksDataCache(m_cacheSim);
   }
 
   if (typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0) {
-    qDebug() << "Initial number of ways of instr cache: "
-             << m_cacheSim->getWaysBits();
-    qDebug() << "Initial number of lines of instr cache: "
-             << m_cacheSim->getLineBits();
-    qDebug() << "Initial number of blocks of instr cache: "
-             << m_cacheSim->getBlockBits();
     saveNbWaysInstrCache(m_cacheSim);
     saveNbLinesInstrCache(m_cacheSim);
     saveNbBlocksInstrCache(m_cacheSim);

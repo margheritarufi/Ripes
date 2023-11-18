@@ -56,6 +56,36 @@ create_ripes_lib(${RIPES_LIB} FIXED_NAME EXCLUDE_SRC_INC)
 
 #target_sources(ripes_lib
 #  PRIVATE
+#    hwdescriptionregfile.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionregfile.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionmm.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionmmap.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionioperiph.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionioperiph.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
 #    hwdescriptioncache.h
 #)
 

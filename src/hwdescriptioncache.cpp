@@ -5,6 +5,7 @@
 // processor'a cache in the params.vh file. The functions are called in the
 // function "downloadFiles" in the file "hwdescription.cpp".
 #include "hwdescriptioncache.h"
+#include "hwdescription.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -33,7 +34,6 @@ int instr_blocks;
 //@return void
 void saveNbWaysDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   data_ways = cacheSimPtr->getWaysBits();
-  qDebug() << "Number of ways in data cache:" << data_ways;
 }
 
 //@brief saveNbLinesDataCache
@@ -49,7 +49,6 @@ void saveNbWaysDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@return void
 void saveNbLinesDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   data_lines = cacheSimPtr->getLineBits();
-  qDebug() << "Number of lines in data cache:" << data_lines;
 }
 
 //@brief saveNbBlocksDataCache
@@ -65,7 +64,6 @@ void saveNbLinesDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@return void
 void saveNbBlocksDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   data_blocks = cacheSimPtr->getBlockBits();
-  qDebug() << "Number of blocks in data cache:" << data_blocks;
 }
 
 //@brief saveNbWaysInstrCache
@@ -82,7 +80,6 @@ void saveNbBlocksDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@return void
 void saveNbWaysInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   instr_ways = cacheSimPtr->getWaysBits();
-  qDebug() << "Nb of ways of instruction cache:" << instr_ways;
 }
 
 //@brief saveNbLinesInstrCache
@@ -99,7 +96,6 @@ void saveNbWaysInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@return void
 void saveNbLinesInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   instr_lines = cacheSimPtr->getLineBits();
-  qDebug() << "Nb of lines of instruction cache:" << instr_lines;
 }
 
 //@brief saveNbBlocksInstrCache
@@ -116,7 +112,6 @@ void saveNbLinesInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@return void
 void saveNbBlocksInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   instr_blocks = cacheSimPtr->getBlockBits();
-  qDebug() << "Nb of blocks of instruction cache:" << instr_blocks;
 }
 
 //@brief writeCacheSettings
@@ -143,9 +138,7 @@ void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeWaysDataCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "\n`define " << std::left << std::setw(20) << "WAYS_DATA_CACHE "
-            << std::pow(2, data_ways) << std::right << std::setw(45)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "WAYS_DATA_CACHE", std::pow(2, data_ways), "//Possible values: any power of 2 until 2^10");
     std::cout
         << "Number of ways in the data cache successfully written in params.vh."
         << std::endl;
@@ -164,9 +157,7 @@ void writeWaysDataCache(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeLinesDataCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "`define " << std::left << std::setw(20) << "LINES_DATA_CACHE "
-            << std::pow(2, data_lines) << std::right << std::setw(35)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "LINES_DATA_CACHE", std::pow(2, data_lines), "//Possible values: any power of 2 until 2^10");
     std::cout << "Number of lines in the data cache successfully written in "
                  "params.vh."
               << std::endl;
@@ -185,9 +176,7 @@ void writeLinesDataCache(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeBlocksDataCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "`define " << std::left << std::setw(20) << "BLOCKS_DATA_CACHE "
-            << std::pow(2, data_blocks) << std::right << std::setw(35)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "BLOCKS_DATA_CACHE", std::pow(2, data_blocks), "//Possible values: any power of 2 until 2^10");
     std::cout << "Number of blocks in the data cache successfully written in "
                  "params.vh."
               << std::endl;
@@ -206,9 +195,7 @@ void writeBlocksDataCache(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeWaysInstrCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "`define " << std::left << std::setw(20) << "WAYS_INSTR_CACHE "
-            << std::pow(2, instr_ways) << std::right << std::setw(35)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "WAYS_INSTR_CACHE", std::pow(2, instr_ways), "//Possible values: any power of 2 until 2^10");
     std::cout
         << "Number of ways in the instruction cache successfully written in "
            "params.vh."
@@ -228,9 +215,7 @@ void writeWaysInstrCache(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeLinesInstrCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "`define " << std::left << std::setw(20) << "LINES_INSTR_CACHE "
-            << std::pow(2, instr_lines) << std::right << std::setw(35)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "LINES_INSTR_CACHE", std::pow(2, instr_lines), "//Possible values: any power of 2 until 2^10");
     std::cout
         << "Number of lines in the instruction cache successfully written in "
            "params.vh."
@@ -250,9 +235,7 @@ void writeLinesInstrCache(std::shared_ptr<std::ofstream> file) {
 //@return void
 void writeBlocksInstrCache(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    (*file) << "`define " << std::left << std::setw(20) << "BLOCKS_INSTR_CACHE "
-            << std::pow(2, instr_blocks) << std::right << std::setw(35)
-            << " //Possible values: any power of 2 until 2^10" << std::endl;
+    printVerilogDefine(file, "BLOCKS_INSTR_CACHE", std::pow(2, instr_blocks), "//Possible values: any power of 2 until 2^10");
     std::cout
         << "Number of blocks in the instruction cache successfully written in "
            "params.vh."
@@ -262,6 +245,4 @@ void writeBlocksInstrCache(std::shared_ptr<std::ofstream> file) {
                  "in the instruction cache"
               << std::endl;
   }
-
-  file->close(); // to delete when add new code!!!!!
 }

@@ -20,6 +20,16 @@ struct nbPeripheralsStruct {
   int switchesCounter;
   int dpadsCounter;
 };
+/*Ripes::ProcessorID thisID;
+QString QcurrentID;
+std::string currentID;*/
+extern std::string selectedDirectory;
+extern std::string folderName;
+//std::shared_ptr<std::ofstream> paramsFile;
+extern std::shared_ptr<std::ofstream> regsFile;
+extern std::shared_ptr<std::ofstream> memoryMapFile;
+//std::map<unsigned int, Ripes::VInt>
+    //regsInitForHwDescription; // See .h file for info about the type
 
 void downloadFiles();
 QString openDirectoryDialog();
@@ -32,17 +42,12 @@ void writeNbStages(std::shared_ptr<std::ofstream> file);
 void writeWidth(std::shared_ptr<std::ofstream> file);
 void writeFwHz(std::shared_ptr<std::ofstream> file);
 void writeISAExtension(std::shared_ptr<std::ofstream> file);
-void writeNbPeriph(std::shared_ptr<std::ofstream> file);
-std::shared_ptr<std::ofstream> createRegsFile();
-void writeRegsInitialValues(std::shared_ptr<std::ofstream> file);
-std::shared_ptr<std::ofstream> createMemoryMapFile();
-void writeMemoryMap(std::shared_ptr<std::ofstream> file);
-QString getNbStages(Ripes::ProcessorID ID);
-QString getWidth(Ripes::ProcessorID ID);
-QString getFw(Ripes::ProcessorID ID);
-QString getHazard(Ripes::ProcessorID ID);
+int getNbStages(Ripes::ProcessorID ID);
+int getWidth(Ripes::ProcessorID ID);
+int getFw(Ripes::ProcessorID ID);
+int getHazard(Ripes::ProcessorID ID);
 QString processorIDToQString(Ripes::ProcessorID ID);
 std::string getISAExtension(QString ISAname);
-std::string getAliasRegName(int i);
 QString createDialogFolderName(QInputDialog &inputDialog);
 int createWarningBox(QMessageBox &msgBox, QString localQfolderName);
+void printVerilogDefine(std::shared_ptr<std::ofstream> file, std::string name, int value, std::string comment ="");
