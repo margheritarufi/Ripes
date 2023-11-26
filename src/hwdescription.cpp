@@ -1,18 +1,19 @@
 //@file hwdescription.cpp
 //@author Margherita Rufi
-//@version 1.0 2023-11-13
+//@version 1.0 2023-11-26
 //@brief This file contains the functions that create the verilog files that
 // describe the processor hardware.
 
 #include "hwdescription.h"
 #include "hwdescriptioncache.h"
 #include "hwdescriptionioperiph.h"
+#include "hwdescriptionmmap.h"
+#include "hwdescriptionregfile.h"
+#include "hwdescriptionstaticfiles.h"
 #include "io/iomanager.h"
 #include "processorhandler.h"
 #include "processorregistry.h"
 #include "ripes_types.h"
-#include "hwdescriptionmmap.h"
-#include "hwdescriptionregfile.h"
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
@@ -32,6 +33,7 @@ std::shared_ptr<std::ofstream> regsFile;
 std::shared_ptr<std::ofstream> memoryMapFile;
 std::map<unsigned int, Ripes::VInt>
     regsInitForHwDescription; // See .h file for info about the type
+std::string paramsFileName = "ripes_params.vh";
 
 /**
  * @brief downloadFiles
@@ -44,16 +46,24 @@ std::map<unsigned int, Ripes::VInt>
  * */
 void downloadFiles() {
   const Ripes::ProcessorID &ID = Ripes::ProcessorHandler::getID();
-  // const Ripes::RegisterInitialization &setup =
-  // Ripes::RegisterInitialization(); 0 ITEMS
   thisID = ID;
   QcurrentID = getProcessorType();
   currentID = QcurrentID.toStdString();
-  QString selectedPath = openDirectoryDialog();
-  if (!selectedPath.isEmpty()) {
-    QString QfolderName = createFolder(selectedPath);
-    if (QfolderName != "") {
-      paramsFile = createParamsFile(selectedPath, QfolderName);
+
+  // Open a dialog window to let the user choose a directory
+  QString QselectedDirectory = openDirectoryDialog();
+
+  // Create folder if the user has chosen a valid path
+  if (!QselectedDirectory.isEmpty()) {
+    QString QfolderName = createFolder(QselectedDirectory);
+
+    selectedDirectory = QselectedDirectory.toStdString();
+    folderName = QfolderName.toStdString();
+
+    // Create files if the use has chosen a valid name
+    if (folderName != "") {
+      // Create and write params.vh
+      paramsFile = createParamsFile();
       writeProcessorType(paramsFile);
       writeNbStages(paramsFile);
       writeWidth(paramsFile);
@@ -61,14 +71,20 @@ void downloadFiles() {
       writeISAExtension(paramsFile);
       writeNbPeriph(paramsFile);
       writePeriphParams(paramsFile);
+      writeCacheSettings(paramsFile);
+      paramsFile->close();
+
+      // Create and write regsfile.xml
       regsFile = createRegsFile();
       writeRegsInitialValues(regsFile);
-      // xml? writeActivePeripherals();
-      writeCacheSettings(paramsFile); //careful: here the params file is closed
-      paramsFile -> close();
+      regsFile->close();
 
+      // Create and write memorymap.xml
       memoryMapFile = createMemoryMapFile();
       writeMemoryMap(memoryMapFile);
+      memoryMapFile->close();
+
+      downloadStaticFiles();
     }
   }
 }
@@ -101,7 +117,6 @@ QString openDirectoryDialog() {
 // @param void
 // @return QString with the processor type
 QString getProcessorType() {
-  // Ripes::ProcessorID idValue = thisID;
   // Transform the processor ID from the Ripes::ProcessorID type to a QString
   QString QstringID = processorIDToQString(thisID);
   return QstringID;
@@ -138,7 +153,7 @@ QString createFolder(QString directoryPath) {
       resultWarningBox = createWarningBox(warningOverwriteBox, QfolderName);
 
       // If the user clicks on "Cancel" or "X" of the warning message box, open
-      // a new dialog window to choose the folder name If the user clicks on
+      // a new dialog window to choose the folder name. If the user clicks on
       // "Yes", the chosen folder will be overwritten with the new files.
       if (resultWarningBox == QMessageBox::Cancel) {
         QfolderName = createDialogFolderName(inputDialogFolderNameRetry);
@@ -180,13 +195,10 @@ QString createFolder(QString directoryPath) {
 // @param QString with the path of the selected directory
 // @param QString with the name of the created folder
 // @return std::shared_ptr<std::ofstream> with the pointer to the created file
-std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath,
-                                                QString QfolderName) {
+std::shared_ptr<std::ofstream> createParamsFile() {
   // Create the params.vh file
-  selectedDirectory = directoryPath.toStdString();
-  folderName = QfolderName.toStdString();
   auto file = std::make_shared<std::ofstream>(
-      selectedDirectory + "/" + folderName + "/params.vh", std::ios::out);
+      selectedDirectory + "/" + folderName + "/ripes_params.vh", std::ios::out);
 
   // Write a presentation comment in the file
   if (file->is_open()) {
@@ -196,9 +208,9 @@ std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath,
                "user's choice of the processor"
             << std::endl;
     // file.close();
-    std::cout << "params.vh created successfully." << std::endl;
+    std::cout << "ripes_params.vh created successfully." << std::endl;
   } else {
-    std::cerr << "Ripes couldn't open params.vh" << std::endl;
+    std::cerr << "Ripes couldn't open ripes_params.vh" << std::endl;
   }
   return file;
 }
@@ -214,10 +226,9 @@ void writeProcessorType(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
     (*file) << "`define " << std::left << std::setw(23) << "PROC_TYPE "
             << currentID << std::endl;
-    std::cout << "Processor ID successfully written in params.vh." << std::endl;
+    sendOutputStream("Processor ID", paramsFileName);
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the processor ID"
-              << std::endl;
+    sendErrorStream("Processor ID", paramsFileName);
   }
 }
 
@@ -230,12 +241,11 @@ void writeProcessorType(std::shared_ptr<std::ofstream> file) {
 // @return void
 void writeNbStages(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    printVerilogDefine(file, "NB_STAGES", getNbStages(thisID), "//Possible values: 1, 5, 6");
-    std::cout << "Number of stages successfully written in params.vh."
-              << std::endl;
+    printVerilogDefine(file, "NB_STAGES", getNbStages(thisID),
+                       "//Possible values: 1, 5, 6");
+    sendOutputStream("Number of stages", paramsFileName);
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the number of stages"
-              << std::endl;
+    sendErrorStream("Number of stages", paramsFileName);
   }
 }
 
@@ -248,15 +258,13 @@ void writeNbStages(std::shared_ptr<std::ofstream> file) {
 // @return void
 void writeWidth(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    printVerilogDefine(file, "DATA_WIDTH", getWidth(thisID), "//Possible values: 32, 64. The error value is 0." );
-    printVerilogDefine(file, "ADDR_WIDTH", getWidth(thisID), "//Possible values: 32, 64. The error value is 0." );
-    std::cout
-        << "Width of data and addresses successfully written in params.vh."
-        << std::endl;
+    printVerilogDefine(file, "DATA_WIDTH", getWidth(thisID),
+                       "//Possible values: 32, 64. The error value is 0.");
+    printVerilogDefine(file, "ADDR_WIDTH", getWidth(thisID),
+                       "//Possible values: 32, 64. The error value is 0.");
+    sendOutputStream("Width of data and addresses", paramsFileName);
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the width of data and "
-                 "addresses"
-              << std::endl;
+    sendErrorStream("Width of data and addresses", paramsFileName);
   }
 }
 
@@ -271,15 +279,15 @@ void writeWidth(std::shared_ptr<std::ofstream> file) {
 // @return void
 void writeFwHz(std::shared_ptr<std::ofstream> file) {
   if (file->is_open()) {
-    printVerilogDefine(file, "FW_PATH", getFw(thisID), "//Possible values: 1/0 : yes/no. Error value: -1");
-    printVerilogDefine(file, "HZ_DETECT", getHazard(thisID), "//Possible values: 1/0 : yes/no. Error value: -1");
-    std::cout << "Forwarding Path and Hazard Detection Unit parameters "
-                 "successfully written in params.vh."
-              << std::endl;
+    printVerilogDefine(file, "FW_PATH", getFw(thisID),
+                       "//Possible values: 1/0 : yes/no. Error value: -1");
+    printVerilogDefine(file, "HZ_DETECT", getHazard(thisID),
+                       "//Possible values: 1/0 : yes/no. Error value: -1");
+    sendOutputStream("Forwarding path and hazard detection unit parameters",
+                     paramsFileName);
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the Forwarding Path "
-                 "and Hazard Detection Unit parameters"
-              << std::endl;
+    sendErrorStream("Forwarding path and hazard detection unit parameters",
+                    paramsFileName);
   }
 }
 
@@ -302,20 +310,18 @@ void writeISAExtension(std::shared_ptr<std::ofstream> file) {
             << " //Possible values: 00, 01, 10, 11 (MC extensions: 1=enabled, "
                "0=disabled)"
             << std::endl;
-    std::cout << "ISA extension code successfully written in params.vh."
-              << std::endl;
+    sendOutputStream("ISA extension code", paramsFileName);
   } else {
-    std::cerr << "Ripes couldn't open params.vh to write the ISA extension code"
-              << std::endl;
+    sendErrorStream("ISA extension code", paramsFileName);
   }
 }
 
 //@brief getNbStages
 // This function is called by the writeNbStages() function. It returns the
-// number of stages of the processor as a QString.
+// number of stages of the processor as an int.
 //
 // @param Ripes::ProcessorID with the ID of the processor selected by the user
-// @return QString with the number of stages of the processor
+// @return int with the number of stages of the processor
 int getNbStages(Ripes::ProcessorID ID) {
   switch (ID) {
   case Ripes::RV32_SS:
@@ -351,10 +357,10 @@ int getNbStages(Ripes::ProcessorID ID) {
 
 // @brief getWidth
 // This function is called by the writeWidth() function. It returns the width of
-// data and addresses of the processor as a QString.
+// data and addresses of the processor as an int.
 //
 // @param Ripes::ProcessorID with the ID of the processor selected by the user
-// @return QString with the width of data and addresses of the processor
+// @return int with the width of data and addresses of the processor
 int getWidth(Ripes::ProcessorID ID) {
   switch (ID) {
   case Ripes::RV32_SS:
@@ -390,10 +396,10 @@ int getWidth(Ripes::ProcessorID ID) {
 
 // @brief getFw
 // This function is called by the writeFwHz() function. It returns the value of
-// the forwarding path parameter as a QString.
+// the forwarding path parameter as an int.
 //
 // @param Ripes::ProcessorID with the ID of the processor selected by the user
-// @return QString with the value of the forwarding path parameter
+// @return int with the value of the forwarding path parameter
 int getFw(Ripes::ProcessorID ID) {
   switch (ID) {
   case Ripes::RV32_5S_NO_HZ:
@@ -417,10 +423,10 @@ int getFw(Ripes::ProcessorID ID) {
 
 // @brief getHazard
 // This function is called by the writeFwHz() function. It returns the value of
-// the hazard detection unit parameter as a QString.
+// the hazard detection unit parameter as an int.
 //
 // @param Ripes::ProcessorID with the ID of the processor selected by the user
-// @return QString with the value of the hazard detection unit parameter
+// @return int with the value of the hazard detection unit parameter
 int getHazard(Ripes::ProcessorID ID) {
   switch (ID) {
   case Ripes::RV32_5S_NO_FW:
@@ -505,6 +511,12 @@ std::string getISAExtension(QString ISAname) {
   }
 }
 
+// #brief createDialogFolderName
+//  This function is called by the createFolder() function. It creates a dialog
+//  window to choose the name of the folder.
+//
+//  @param QInputDialog with the dialog window
+//  @return QString with the name of the folder
 QString createDialogFolderName(QInputDialog &inputDialog) {
   inputDialog.setWindowTitle("Name of the folder");
   inputDialog.setLabelText("Choose a name for the folder.");
@@ -526,6 +538,13 @@ QString createDialogFolderName(QInputDialog &inputDialog) {
   return localQfolderName;
 }
 
+// @brief createWarningBox
+// This function is called by the createFolder() function. It creates a warning
+// window to ask the user if he/she wants to overwrite the existing folder.
+//
+// @param QMessageBox with the warning window
+// @param QString with the name of the folder
+// @return int with the result of the warning window
 int createWarningBox(QMessageBox &msgBox, QString localQfolderName) {
   msgBox.setIcon(QMessageBox::Warning);
   msgBox.setText("The folder" + localQfolderName +
@@ -537,8 +556,42 @@ int createWarningBox(QMessageBox &msgBox, QString localQfolderName) {
   return msgBox.exec();
 }
 
-void printVerilogDefine(std::shared_ptr<std::ofstream> file, std::string name, int value, std::string comment){
-  (*file) << "`define " << std::left << std::setw(23) << name
-             << value << std::right << std::setw(70)
-             << comment << std::endl;
+// @brief printVerilogDefine
+// This function is called by all the functions that write a parameter in the
+// params.vh file. It writes the parameter in the file following the Verilog
+// syntax and a regular format.
+//
+// @param std::shared_ptr<std::ofstream> with the pointer to the created
+// "params.vh" file
+// @param std::string with the name of the parameter
+// @param int with the value of the parameter
+// @param std::string with the comment of the parameter
+// @return void
+void printVerilogDefine(std::shared_ptr<std::ofstream> file, std::string name,
+                        int value, std::string comment) {
+  (*file) << "`define " << std::left << std::setw(23) << name << value
+          << std::right << std::setw(70) << comment << std::endl;
+}
+
+// @brief sendOutputStream
+// This function sends an output stream to inform that something was
+// successfully written inside the file 'fileName'
+//
+// @param std::string with the name of the object that was written in the file
+// @param std::string with the name of the file
+void sendOutputStream(std::string objectName, std::string fileName) {
+  std::cout << objectName << " successfully written in " << fileName << "."
+            << std::endl;
+}
+
+// @brief sendErrorStream
+// This function sends an error stream to inform that Ripes couldn't open a file
+// to write some data.
+//
+// @param std::string with the name of the object that couldn't be written in
+// the file
+// @param std::string with the name of the file
+void sendErrorStream(std::string objectName, std::string fileName) {
+  std::cerr << "Ripes couldn't open " << fileName << " to write " << objectName
+            << "." << std::endl;
 }

@@ -29,8 +29,8 @@ CacheWidget::CacheWidget(QWidget *parent)
   // lines and blocks of the cache so that they can be written in the
   // "params.vh" file.
   // Note that this constructor is called before the launch of Ripes GUI,
-  // so the cache parameters saved in the following if clauses are the default
-  // ones, they are not chosen by the user.
+  // so the cache parameters saved in the following if clauses are the first ones
+  // available when the GUI is launched.
   QWidget *typeOfCache = parent;
   if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
     saveNbWaysDataCache(m_cacheSim);
@@ -62,7 +62,7 @@ CacheWidget::CacheWidget(QWidget *parent)
     // "params.vh" file.
     // Note that this code section is executed any time the user changes the
     // cache parameters from Ripes GUI. Therefore, the cache parameters saved
-    // in the following if clauses overwrite the default ones.
+    // in the following if clauses overwrite the initial ones.
     QWidget *typeOfCache = parent;
     if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
       saveNbWaysDataCache(m_cacheSim);

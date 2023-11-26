@@ -56,6 +56,16 @@ create_ripes_lib(${RIPES_LIB} FIXED_NAME EXCLUDE_SRC_INC)
 
 #target_sources(ripes_lib
 #  PRIVATE
+#    hwdescriptionstaticfiles.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescrstaticverilogfiles.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
 #    hwdescriptionregfile.cpp
 #)
 

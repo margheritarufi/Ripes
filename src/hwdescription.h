@@ -9,34 +9,29 @@
 #include <map>
 
 // namespace Ripes {
+extern Ripes::ProcessorID thisID;
 extern std::shared_ptr<std::ofstream> paramsFile;
+extern std::string selectedDirectory;
+extern std::string folderName;
+extern std::shared_ptr<std::ofstream> regsFile;
+extern std::shared_ptr<std::ofstream> memoryMapFile;
 extern std::map<unsigned int, Ripes::VInt>
     regsInitForHwDescription; // This type is equivalent to extern
                               // std::map<unsigned int, unsigned long long>.
-                              // VInt is used to avoid error in the action
-                              // "test.yml" (Ubuntu build)
+                              // VInt is used to avoid error in the GitHub
+                              // action "test.yml" (Ubuntu build)
+extern std::string paramsFileName;
 struct nbPeripheralsStruct {
   int ledArraysCounter;
   int switchesCounter;
   int dpadsCounter;
 };
-/*Ripes::ProcessorID thisID;
-QString QcurrentID;
-std::string currentID;*/
-extern std::string selectedDirectory;
-extern std::string folderName;
-//std::shared_ptr<std::ofstream> paramsFile;
-extern std::shared_ptr<std::ofstream> regsFile;
-extern std::shared_ptr<std::ofstream> memoryMapFile;
-//std::map<unsigned int, Ripes::VInt>
-    //regsInitForHwDescription; // See .h file for info about the type
 
 void downloadFiles();
 QString openDirectoryDialog();
 QString getProcessorType();
 QString createFolder(QString directoryPath);
-std::shared_ptr<std::ofstream> createParamsFile(QString directoryPath,
-                                                QString QfolderName);
+std::shared_ptr<std::ofstream> createParamsFile(); //QString directoryPath, QString QfolderName);
 void writeProcessorType(std::shared_ptr<std::ofstream> file);
 void writeNbStages(std::shared_ptr<std::ofstream> file);
 void writeWidth(std::shared_ptr<std::ofstream> file);
@@ -51,3 +46,5 @@ std::string getISAExtension(QString ISAname);
 QString createDialogFolderName(QInputDialog &inputDialog);
 int createWarningBox(QMessageBox &msgBox, QString localQfolderName);
 void printVerilogDefine(std::shared_ptr<std::ofstream> file, std::string name, int value, std::string comment ="");
+void sendOutputStream(std::string objectName, std::string fileName);
+void sendErrorStream(std::string objectName, std::string fileName);

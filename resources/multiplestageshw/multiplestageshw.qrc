@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/multiplestageshw">
+        <file>cpu.v</file>
+        <file>memory.v</file>
+        <file>designer_params.vh</file>
+    </qresource>
+</RCC>

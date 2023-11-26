@@ -1,14 +1,22 @@
+//@file hwdescriptionregfile.cpp
+//@author Margherita Rufi
+//@version 1.0 2023-11-26
+//@brief This file contains the functions used to write the initial values of
+//the
+// registers in the registerfile.xml file.
+
+#include "hwdescriptionregfile.h"
 #include "hwdescription.h"
 #include "hwdescriptioncache.h"
 #include "hwdescriptionioperiph.h"
+#include "hwdescriptionmmap.h"
 #include "processorhandler.h"
 #include "processorregistry.h"
 #include "ripes_types.h"
-#include "hwdescriptionmmap.h"
-#include "hwdescriptionregfile.h"
 #include <QDebug>
 #include <iomanip>
 
+std::string registerFileName = "registerfile.xml";
 
 //@brief createRegsFile
 // This function is called by the downloadFiles() function. It creates the
@@ -23,15 +31,14 @@ std::shared_ptr<std::ofstream> createRegsFile() {
       selectedDirectory + "/" + folderName + "/registerfile.xml",
       std::ios::out);
 
-         // Write a presentation comment in the file
+  // Write a presentation comment in the file
   if (file->is_open()) {
     (*file) << "<<!--This file describes the register file at its initial "
                "status -->"
             << std::endl;
-    // file.close();
-    std::cout << "registerfile.xml created successfully." << std::endl;
+    std::cout << registerFileName << " created successfully." << std::endl;
   } else {
-    std::cerr << "Ripes couldn't create registerfile.xml" << std::endl;
+    std::cerr << "Ripes couldn't create " << registerFileName << std::endl;
   }
 
   return file;
@@ -51,7 +58,7 @@ std::shared_ptr<std::ofstream> createRegsFile() {
 void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
   Ripes::RegisterInitialization localRegsInit = regsInitForHwDescription;
 
-         // Generate the XML content
+  // Generate the XML content
   if (file->is_open()) {
     (*file) << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     (*file) << "<registerfile>" << std::endl;
@@ -61,7 +68,7 @@ void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
             << std::endl;
     (*file) << "  <registers>" << std::endl;
 
-           // Create individual register elements
+    // Create individual register elements
     for (int i = 0; i < 32; i++) {
       if (regsInitForHwDescription[i] != 0) {
         (*file) << "    <register>" << std::endl;
@@ -76,11 +83,9 @@ void writeRegsInitialValues(std::shared_ptr<std::ofstream> file) {
 
     (*file) << "  </registers>" << std::endl;
     (*file) << "</register_file>" << std::endl;
-
-           // Close the file
-    (*file).close();
+    sendOutputStream("Initial values of registers", registerFileName);
   } else {
-    std::cerr << "Ripes couldn't open registerfile.xml" << std::endl;
+    sendErrorStream("initial values of registers", registerFileName);
   }
 }
 
