@@ -2,7 +2,7 @@
 //@author Margherita Rufi
 //@version 1.0 2023-11-26
 //@brief This file contains the functions used to write the initial values of
-//the
+// the
 // registers in the registerfile.xml file.
 
 #include "hwdescriptionregfile.h"
