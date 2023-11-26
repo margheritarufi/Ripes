@@ -1,5 +1,6 @@
 #include "cachesim/cachesim.h"
 #include <QWidget>
+#include <memory>
 
 void saveNbWaysDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr);
 void saveNbLinesDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr);

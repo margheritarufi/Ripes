@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <memory>
 
 // namespace Ripes {
 extern Ripes::ProcessorID thisID;
