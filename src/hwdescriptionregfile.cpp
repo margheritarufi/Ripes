@@ -15,6 +15,7 @@
 #include "ripes_types.h"
 #include <QDebug>
 #include <iomanip>
+#include <memory>
 
 std::string registerFileName = "registerfile.xml";
 

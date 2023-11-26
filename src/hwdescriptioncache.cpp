@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <cmath>
 #include <iomanip>
+#include <memory>
 
 int data_ways;
 int data_lines;

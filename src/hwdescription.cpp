@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <iomanip>
+#include <memory>
 
 // no Ripes namespace because otherwise I get LNK2019 error when I use QDir
 Ripes::ProcessorID thisID;

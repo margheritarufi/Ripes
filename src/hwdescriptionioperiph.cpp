@@ -11,6 +11,7 @@
 #include "ioledmatrix.h"
 #include <QDebug>
 #include <iomanip>
+#include <memory>
 
 // @brief writeNbPeriph
 // This function writes the number of active instantiations of each peripheral
