@@ -54,6 +54,17 @@ endif()
 # Create the parent library. This will include everything in the current directory.
 create_ripes_lib(${RIPES_LIB} FIXED_NAME EXCLUDE_SRC_INC)
 
+target_sources(ripes_lib
+  PRIVATE
+    systemtab.ui
+    test.h test.cpp test.ui
+)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    systemtab.cpp
+#)
+
 #target_sources(ripes_lib
 #  PRIVATE
 #    hwdescriptionstaticfiles.h
