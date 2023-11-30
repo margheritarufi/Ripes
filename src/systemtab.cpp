@@ -1,7 +1,8 @@
 #include "systemtab.h"
 #include "ui_systemtab.h"
+//#include "iomanager.h" in .h
+#include "processorhandler.h"
 #include "hwdescription.h"
-#include "iomanager.h"
 
 #include <QGraphicsItem>
 #include <QPushButton>
@@ -12,6 +13,7 @@
 #include <QVBoxLayout>
 #include <iostream>
 #include <QListWidgetItem>
+#include <QVector>
 
 
 
@@ -28,9 +30,220 @@
 
 namespace Ripes {
 
+//QVector<SystemBlock*> blocksVector; // = {};
+// Get the list of all active peripherals
+//auto activePeripherals = Ripes::IOManager::get().getPeripherals(); //Declaration of reference variable requires initialization
+//int nbActivePeripherals;
+//auto processorID = Ripes::ProcessorHandler::getID();
+
+SystemBlock::SystemBlock(BlockType type, std::string name, qreal x, qreal y, qreal width,
+                         qreal height, QGraphicsItem *parent)
+    : QGraphicsRectItem(x, y, width, height, parent), m_type(type), m_name(name) {
+
+  //For each instantiated rectangle, create and place a lable
+  m_label = new QGraphicsTextItem(QString::fromStdString(name), this);
+  m_label->setPos(x, y);
+  cpuLabelPosition = rect().center() - QPointF(m_label->boundingRect().width() / 2, m_label->boundingRect().height() / 2);
+  m_label->setPos(cpuLabelPosition);
+}
+
+void SystemBlock::updateLabel(const QString &newName) {
+  m_label->setPlainText(newName);
+}
+
+SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
+    : RipesTab(toolbar, parent), m_ui(new Ui::SystemTab) {
+
+  m_ui->setupUi(this);
+
+  const Ripes::ProcessorID &processorID = Ripes::ProcessorHandler::getID();
+
+  // Set initial dimensions of the splitter
+  int width = this->width();  // Width of the tab window
+  m_ui->splitter->setSizes({static_cast<int>(width * 0.8), static_cast<int>(width * 0.2)});
+
+  //Get the current active peripherals
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals(); //it's a set: not ordered, not accessible by indexes
+  int nbActivePeripherals = activePeripherals.size();
+
+  //Create the three main, fixed blocks
+  cpuRect = new SystemBlock(CPU, processorIDToQString(processorID).toStdString(), startSceneX, startSceneY, baseBlockDimension, baseBlockDimension);
+  memoryRect = new SystemBlock(MEMORY, "Memory", startSceneX + baseSpaceBetweenBlocks + baseBlockDimension, startSceneY, baseBlockDimension, baseBlockDimension);
+  busRect = new SystemBlock(BUS, "Bus", startSceneX - baseSpaceBetweenBlocks, startSceneY + baseBlockDimension + baseSpaceBetweenBlocks, (baseBlockDimension + baseSpaceBetweenBlocks) * nbActivePeripherals + baseSpaceBetweenBlocks, baseBusHeight);
+
+  //Create a list of the blocks in the scheme
+  blocksVector ={};
+  blocksVector.append(cpuRect); // Adjust the dimensions as needed
+  blocksVector.append(memoryRect); // Adjust the dimensions as needed
+  blocksVector.append(busRect); // Adjust the dimensions as needed
+
+         // For each active peripheral, check its base name and increment the
+         // corresponding counter
+  /*for (int i=0; i<nbActivePeripherals; i++) {
+    std::set<IOBase*>::iterator it = activePeripherals.begin();
+    blocksVector.append(new QGraphicsRectItem(*it->baseName(), 0+50*i+15*i, 125, 50, 50));
+    ++it; // Avanza all'elemento successivo
+  }*/
+
+  // Add the blocks of the peripherals, according to the ones that are currently active
+  int spaceOffset = 0;
+  for(const Ripes::IOBase *periph : activePeripherals){
+    blocksVector.append(new SystemBlock(PERIPHERAL, periph->baseName().toStdString() + " " + std::to_string(periph->getm_id()), startSceneX+baseBlockDimension*spaceOffset+baseSpaceBetweenBlocks*spaceOffset, startSceneY + baseBlockDimension + baseSpaceBetweenBlocks*2 + baseBusHeight, baseBlockDimension, baseBlockDimension));
+    spaceOffset++;
+  }
+
+  // Add all the blocks to the scene and the corresponding name to the list
+  scene = new QGraphicsScene(this);
+  for(const auto& element : blocksVector){
+    scene->addItem(element);
+    setItemStyles(element, Qt::gray);
+    m_ui->myListWidget->addItem(element->getQName());
+  }
+
+  // Create view with the scene, add it to the grid layout and change some settings
+  view = new SystemTabView(this);
+  view->setScene(scene);
+  m_ui->myGridLayout->addWidget(view);
+  view->setRenderHint(QPainter::Antialiasing, true);
+  view->setRenderHint(QPainter::SmoothPixmapTransform, true);
+  view->setDragMode(QGraphicsView::ScrollHandDrag);
+  view->setInteractive(true);
+
+  //Do the connection to handle the click on an item of the list and the change of the memory map
+  connect(m_ui->myListWidget, &QListWidget::itemClicked, this, &SystemTab::onListItemClicked);
+  connect(&IOManager::get(), &IOManager::memoryMapChanged, this, &SystemTab::updateSystemTab);
+}
+
+SystemTab::~SystemTab() { delete m_ui; }
+
+void SystemTab::onListItemClicked(QListWidgetItem *item) {
+  // When an item of the list is clicked, the corresponding block is selected
+  QString itemName = item->text();
+  for(const auto& element : blocksVector){
+    if(itemName == element->getQName()){
+      element->setSelected(true);
+    } else {
+      element->setSelected(false);
+    }
+  }
+}
+
+void SystemTab::setItemStyles(SystemBlock *item, const QColor &color) {
+  // Set colors and styles for items
+  item->setBrush(QBrush(color));
+  item->setPen(QPen(Qt::black));
+  item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+  item->setAcceptHoverEvents(true);
+}
+
+void SystemTab::updateSystemTab(){
+  /*QVector<int> indexesToDelete = {};
+  int index = 0;
+
+
+  for(const auto& element : blocksVector){
+    if(element->getBlockType() == Ripes::CPU){
+      element -> setName(processorIDToQString(thisID).toStdString());
+      //qDebug() << element->getQName().toStdString();
+    }
+    if(element->getBlockType() == Ripes::BUS){
+      element -> setRect(-10, 75, 65 * nbActivePeripherals + 20, 25);
+      //qDebug() << element->getQName().toStdString();
+    }
+    if(element->getBlockType() == Ripes::PERIPHERAL){
+      //qDebug() << element->getQName().toStdString() << "will be removed removed";
+      //blocksVector.removeOne(element);
+      indexesToDelete.append(index);
+      //delete element; //free memory
+    }
+    index++;
+  }
+
+  //from the last to the first element of indexestodelete because they are in increasing order and will make deletion crash
+  for(int i=indexesToDelete.size()-1; i>=0; i--){
+    scene->removeItem(blocksVector[indexesToDelete[i]]);
+    delete blocksVector[indexesToDelete[i]];
+    blocksVector.remove(indexesToDelete[i]);
+  }*/
+
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals(); //must re-call it every time to get the new peripherals (it is a reference, not a pointer)
+  int nbActivePeripherals = activePeripherals.size();
+  deletePeripheralBlocks(nbActivePeripherals); //after this function all the blocks are removed from the blocksVector and from the scene
+  if(nbActivePeripherals > 0){
+    addNewPeripherals(activePeripherals);
+  }
+
+
+  /*if (scene) {
+    //scene->clear(); this will somehow invalidate the rects too...
+    for(const auto& block : blocksVector){
+      //Add only the peripherals because the cpu, memory and bus are already (and always) there.
+      if(block->getBlockType() == Ripes::PERIPHERAL){
+        scene->addItem(block);
+        setItemStyles(block, Qt::gray);
+        m_ui->myListWidget->addItem(block->getQName());
+      }
+    }
+  } else {
+    std::cerr << "Error: scene is null." << std::endl;
+  }*/
+}
+
+void SystemTab::deletePeripheralBlocks(int nbActivePeripherals) {
+  const Ripes::ProcessorID &processorID = Ripes::ProcessorHandler::getID(); //must re-call it every time to get the new ID (it is a reference, not a pointer)
+  m_ui->myListWidget->clear();
+
+  blocksVector.erase(std::remove_if(blocksVector.begin(), blocksVector.end(),
+    [&](SystemBlock* element) {
+      if (element->getBlockType() == Ripes::CPU) {
+        QString NewName = processorIDToQString(processorID);
+        element->setName(NewName.toStdString());
+        element->updateLabel(NewName);
+        m_ui->myListWidget->addItem(element->getQName());
+        return false;
+      } else if (element->getBlockType() == Ripes::BUS) {
+        element->setRect(startSceneX - baseSpaceBetweenBlocks, startSceneY + baseBlockDimension + baseSpaceBetweenBlocks, (baseBlockDimension + baseSpaceBetweenBlocks) * nbActivePeripherals + baseSpaceBetweenBlocks, baseBusHeight);
+        m_ui->myListWidget->addItem(element->getQName());
+        return false;
+      } else if (element->getBlockType() == Ripes::MEMORY) {
+        m_ui->myListWidget->addItem(element->getQName());
+        return false;
+      } else if (element->getBlockType() == Ripes::PERIPHERAL) {
+        scene->removeItem(element);
+        delete element; // free memory (optional)
+        return true;
+      }
+      return false;
+      }),
+      blocksVector.end());
+}
+
+void SystemTab::addNewPeripherals(std::set<IOBase*>& activePeripherals){
+  int spaceOffset = 0;
+  for(const Ripes::IOBase *periph : activePeripherals){
+    SystemBlock* newBlock = new SystemBlock(PERIPHERAL, periph->baseName().toStdString() + " " + std::to_string(periph->getm_id()), startSceneX+baseBlockDimension*spaceOffset+baseSpaceBetweenBlocks*spaceOffset, startSceneY + baseBlockDimension + baseSpaceBetweenBlocks*2 + baseBusHeight, baseBlockDimension, baseBlockDimension);
+    blocksVector.append(newBlock);
+    spaceOffset++;
+    scene->addItem(newBlock);
+    setItemStyles(newBlock, Qt::gray);
+    m_ui->myListWidget->addItem(newBlock->getQName());
+  }
+}
+
+
+
+/*******SystemTabView********/
 SystemTabView::SystemTabView(QWidget *parent)
     : QGraphicsView(parent) {
   // Constructor needs to be declared in .cpp otherwise link error (external symbol)
+}
+
+void SystemTabView::zoomIn() {
+  scale(1.2, 1.2);
+}
+
+void SystemTabView::zoomOut() {
+  scale(1.0 / 1.2, 1.0 / 1.2);
 }
 
 void SystemTabView::wheelEvent(QWheelEvent *event) { //automatically called when wheel is moved (QGraphicsView)
@@ -44,153 +257,5 @@ void SystemTabView::wheelEvent(QWheelEvent *event) { //automatically called when
     QGraphicsView::wheelEvent(event);
   }
 }
-
-SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
-    : RipesTab(toolbar, parent), m_ui(new Ui::SystemTab) {
-  m_ui->setupUi(this);
-
-  // Imposta le dimensioni iniziali dello splitter (percentuali rispetto alla finestra principale)
-  int width = this->width();  // Larghezza della finestra principale
-  m_ui->splitter->setSizes({static_cast<int>(width * 0.8), static_cast<int>(width * 0.2)});
-
-
-  // Crea la scena
-  QGraphicsScene *scene = new QGraphicsScene(this);
-
-  // Crea un rettangolo
-  cpuItem = new QGraphicsRectItem(0, 0, 50, 50); // Adjust the dimensions as needed
-  memoryItem = new QGraphicsRectItem(100, 0, 50, 50); // Adjust the dimensions as needed
-  busItem = new QGraphicsRectItem(-10, 75, 170, 25); // Adjust the dimensions as needed
-  periphItem = new QGraphicsRectItem(0, 125, 50, 50);
-
-         // Add items to the scene
-  scene->addItem(cpuItem);
-  scene->addItem(memoryItem);
-  scene->addItem(busItem);
-  scene->addItem(periphItem);
-
-  cpuItem->setBrush(QBrush(Qt::lightGray));
-  memoryItem->setBrush(QBrush(Qt::lightGray));
-  periphItem->setBrush(QBrush(Qt::lightGray));
-  busItem->setBrush(QBrush(Qt::lightGray));
-
-  QGraphicsTextItem *cpuLabel = new QGraphicsTextItem(processorIDToQString(thisID));
-  QGraphicsTextItem *memoryLabel = new QGraphicsTextItem("Memory");
-  QGraphicsTextItem *periphLabel = new QGraphicsTextItem("Peripheral");
-  QGraphicsTextItem *busLabel = new QGraphicsTextItem("Bus");
-  /*QFont font = label->font();
-  font.setPointSize(12);  // Imposta la grandezza del testo a 12 punti (puoi personalizzare questo valore)
-  label->setFont(font);
-  label->setPos(10, 10); // Posizione della label all'interno del rettangolo */
-
-  QPointF cpuLabelPosition = cpuItem->rect().center() - QPointF(cpuLabel->boundingRect().width() / 2, cpuLabel->boundingRect().height() / 2);
-  QPointF memoryLabelPosition = memoryItem->rect().center() - QPointF(memoryLabel->boundingRect().width() / 2, memoryLabel->boundingRect().height() / 2);
-  QPointF busLabelPosition = busItem->rect().center() - QPointF(busLabel->boundingRect().width() / 2, busLabel->boundingRect().height() / 2);
-  QPointF periphLabelPosition = periphItem->rect().center() - QPointF(periphLabel->boundingRect().width() / 2, periphLabel->boundingRect().height() / 2);
-
-  cpuLabel->setPos(cpuLabelPosition);
-  memoryLabel->setPos(memoryLabelPosition);
-  periphLabel->setPos(periphLabelPosition);
-  busLabel->setPos(busLabelPosition);
-
-  scene->addItem(cpuLabel);
-  scene->addItem(memoryLabel);
-  scene->addItem(periphLabel);
-  scene->addItem(busLabel);
-
-  // Crea la view e imposta la scena
-  SystemTabView *view = new SystemTabView(this); // Usa la tua classe derivata da QGraphicsView
-  view->setScene(scene);
-  //view->setSceneRect(scene->sceneRect());
-
-  // Crea un QVBoxLayout e aggiungi la tua vista
-  /*setLayout(new QVBoxLayout);
-  layout()->addWidget(view);*/
-  m_ui->myGridLayout->addWidget(view);
-  //m_ui->myGridLayout->addWidget(m_ui->myButton2);
-
-  view->setRenderHint(QPainter::Antialiasing, true);
-  view->setRenderHint(QPainter::SmoothPixmapTransform, true);
-  view->setDragMode(QGraphicsView::ScrollHandDrag);
-  view->setInteractive(true);
-
-  // Add items to the QListWidget
-  m_ui->myListWidget->addItem(processorIDToQString(thisID));
-  m_ui->myListWidget->addItem("Memory");
-
-  // Get the list of all active peripherals
-  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
-
-  // For each active peripheral, check its base name and increment the
-  // corresponding counter
-  for (const Ripes::IOBase *peripheral : activePeripherals) {
-    m_ui->myListWidget->addItem(peripheral->baseName()); // + " " + QString::number(peripheral->getm_id()));
-  }
-
-  connect(m_ui->myListWidget, &QListWidget::itemClicked, this, &SystemTab::onListItemClicked);
-
-}
-
-void SystemTab::onListItemClicked(QListWidgetItem *item) {
-  // Gestisci la selezione della QListWidget
-  QString itemName = item->text();
-
-  std::cout << "printo" << std::endl;
-
-  // Evidenzia il rettangolo corrispondente nella QGraphicsView
-  if (itemName == processorIDToQString(thisID)) {
-    cpuItem->setBrush(QBrush(Qt::blue));
-    memoryItem->setBrush(QBrush(Qt::lightGray));
-    periphItem->setBrush(QBrush(Qt::lightGray));
-  } else if (itemName == "Memory") {
-    cpuItem->setBrush(QBrush(Qt::lightGray));
-    memoryItem->setBrush(QBrush(Qt::blue));
-    periphItem->setBrush(QBrush(Qt::lightGray));
-  } else if (itemName == "LED Matrix") {
-    cpuItem->setBrush(QBrush(Qt::lightGray));
-    memoryItem->setBrush(QBrush(Qt::lightGray));
-    periphItem->setBrush(QBrush(Qt::blue));
-  }
-
-  //view->update(); crusha!!! (update is automatic)
-}
-
-void SystemTabView::zoomIn() {
-  scale(1.2, 1.2);
-}
-
-void SystemTabView::zoomOut() {
-  scale(1.0 / 1.2, 1.0 / 1.2);
-}
-
-
-void SystemTab::setItemStyles(QGraphicsRectItem *item, const QColor &color) {
-  // Set colors and styles for items
-  item->setBrush(QBrush(color));
-  item->setPen(QPen(Qt::black));
-  item->setFlag(QGraphicsItem::ItemIsSelectable, true);
-  item->setAcceptHoverEvents(true);
-}
-
-void SystemTab::connectItemsWithArrow(QGraphicsRectItem *startItem, QGraphicsRectItem *endItem, const QColor &color) {
-  // Create arrow line
-  QGraphicsLineItem *arrowLine = new QGraphicsLineItem(startItem->sceneBoundingRect().center().x(),
-                                                       startItem->sceneBoundingRect().height() + startItem->sceneBoundingRect().y(),
-                                                       startItem->sceneBoundingRect().center().x(),
-                                                       endItem->sceneBoundingRect().center().y() - endItem->sceneBoundingRect().height()/2);
-  arrowLine->setPen(QPen(color, 2));
-  scene->addItem(arrowLine);
-
-         // Tooltip for arrow line
-  arrowLine->setToolTip("Data Flow");
-}
-
-
-
-
-
-SystemTab::~SystemTab() { delete m_ui; }
-
-
 
 } // namespace Ripes
