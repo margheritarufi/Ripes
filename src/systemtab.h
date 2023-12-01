@@ -74,6 +74,7 @@ private:
   int baseBlockDimension = 100;
   int baseBusHeight = 45;
   int baseSpaceBetweenBlocks = 20;
+  int baseDistanceFromBus = 50;
   int startSceneX = 0;
   int startSceneY = 0;
 
@@ -93,8 +94,7 @@ private:
   void updateSystemTab();
   void deletePeripheralBlocks(int nbActivePeripherals);
   void addNewPeripherals(std::set<IOBase*>& activePeripherals);
-  //void connectItemsWithArrow(QGraphicsRectItem *startItem, QGraphicsRectItem *endItem, const QColor &color);
-
+  void connectItemsWithArrow(SystemBlock *startItem, SystemBlock *endItem, const QColor &color);
 
 private slots:
   void onListItemClicked(QListWidgetItem *item);
