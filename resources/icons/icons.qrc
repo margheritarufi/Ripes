@@ -39,5 +39,7 @@
         <file>tile.svg</file>
         <file>crosshair_blue.svg</file>
         <file>crosshair_gold.svg</file>
+        <file>downloadHwDescription.svg</file>
+	<file>system.svg</file>
     </qresource>
 </RCC>

@@ -113,6 +113,7 @@ IOBase *IOTab::createPeripheral(IOType type, int forcedID) {
 
   // Create tab for peripheral
   auto *peripheralTab = new IOPeripheralTab(this, peripheral);
+
   m_ui->peripheralsTab->addTab(peripheralTab, peripheral->name());
   m_periphToTab[peripheral] = peripheralTab;
 

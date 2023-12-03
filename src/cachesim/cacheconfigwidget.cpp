@@ -12,6 +12,9 @@
 #include "enumcombobox.h"
 #include "ripessettings.h"
 
+#include <QDebug>
+#include <QWidget>
+
 namespace Ripes {
 
 CacheConfigWidget::CacheConfigWidget(QWidget *parent)

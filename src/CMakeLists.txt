@@ -54,6 +54,76 @@ endif()
 # Create the parent library. This will include everything in the current directory.
 create_ripes_lib(${RIPES_LIB} FIXED_NAME EXCLUDE_SRC_INC)
 
+target_sources(ripes_lib
+  PRIVATE
+    systemtab.ui
+)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    systemtab.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionstaticfiles.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescrstaticverilogfiles.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionregfile.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionregfile.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionmm.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionmmap.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionioperiph.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptionioperiph.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptioncache.h
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescriptioncache.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescription.cpp
+#)
+
+#target_sources(ripes_lib
+#  PRIVATE
+#    hwdescription.h
+#)
+
 # All of the following subdirectories will create separate libraries and link them into
 # ripes_lib
 add_subdirectory(isa)
@@ -72,5 +142,5 @@ target_link_libraries(${RIPES_LIB} PUBLIC
     fancytabbar_lib
     ${VSRTL_GRAPHICS_LIB}
     Qt6::Charts
+    #Qt6::Core #Rufi
     dwarf++)
-

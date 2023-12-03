@@ -9,6 +9,9 @@
 #include <QSpinBox>
 #include <QTemporaryFile>
 
+// rufi
+#include <QDebug>
+
 #include "consolewidget.h"
 #include "instructionmodel.h"
 #include "pipelinediagrammodel.h"
@@ -20,6 +23,9 @@
 #include "registermodel.h"
 #include "ripessettings.h"
 #include "syscall/systemio.h"
+
+// rufi
+#include "hwdescription.h"
 
 #include "VSRTL/graphics/vsrtl_widget.h"
 
@@ -154,6 +160,16 @@ ProcessorTab::ProcessorTab(QToolBar *controlToolbar,
 
   // Initially, no file is loaded, disable toolbuttons
   enableSimulatorControls();
+
+  // rufi
+  //  Note that this ProcessorTab constructor is called before the launch of
+  //  Ripes GUI, so the values saved here in the regsInitForHwDescription
+  //  variable are the default ones, they are not chosen by the user. It will be
+  //  used to write registerfile.xml
+  regsInitForHwDescription =
+      Ripes::ProcessorRegistry::getDescription(Ripes::ProcessorHandler::getID())
+          .defaultRegisterVals;
+  // end rufi
 }
 
 void ProcessorTab::loadLayout(const Layout &layout) {
@@ -296,6 +312,17 @@ void ProcessorTab::setupSimulatorActions(QToolBar *controlToolbar) {
           });
   m_darkmodeAction->setChecked(
       RipesSettings::value(RIPES_SETTING_DARKMODE).toBool());
+
+  // rufi
+  // Add the icon in the toolbar to download the hw description files
+  // and connect it to the function downloadHwDescription()
+  const QIcon hwIcon = QIcon(":/icons/downloadHwDescription.svg");
+  m_downloadHwDescriptionAction =
+      new QAction(hwIcon, "Download HW description files", this);
+  connect(m_downloadHwDescriptionAction, &QAction::triggered, this,
+          &ProcessorTab::downloadHwDescription);
+  m_toolbar->addAction(m_downloadHwDescriptionAction);
+  // end rufi
 }
 
 void ProcessorTab::updateStatistics() {
@@ -369,16 +396,29 @@ void ProcessorTab::loadProcessorToWidget(const Layout *layout) {
   fitToScreen();
 }
 
-void ProcessorTab::processorSelection() {
+void ProcessorTab::
+    processorSelection() { // rufi: connected to processorselection button: this
+                           // function is called when that button is clicked
   m_autoClockAction->setChecked(false);
-  ProcessorSelectionDialog diag;
-  if (diag.exec()) {
+  ProcessorSelectionDialog
+      diag;          // rufi: creation of a dialog window to select processor
+  if (diag.exec()) { // rufi: here the window is opened
     // New processor model was selected
     m_vsrtlWidget->clearDesign();
     m_stageInstructionLabels.clear();
     ProcessorHandler::selectProcessor(diag.getSelectedId(),
                                       diag.getEnabledExtensions(),
                                       diag.getRegisterInitialization());
+
+    // rufi
+    // Get the initial values of the registers.
+    // Note that this code section is executed any time the user changes the
+    // the inital register values from the Select Processor window (Register
+    // Initialization section). Therefore, the cache parameters saved
+    // in the following regsInitForHwDescription variable overwrite the default
+    // ones. It will be used to write registerfile.xml
+    regsInitForHwDescription = diag.getRegisterInitialization();
+    // end rufi
 
     // Store selected layout index
     const auto &layouts =
@@ -592,4 +632,8 @@ void ProcessorTab::showPipelineDiagram() {
   auto w = PipelineDiagramWidget(m_stageModel);
   w.exec();
 }
+
+// rufi
+void ProcessorTab::downloadHwDescription() { downloadFiles(); }
+
 } // namespace Ripes

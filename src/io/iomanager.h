@@ -66,6 +66,11 @@ public:
    */
   void reset();
 
+  //rufi
+  const std::set<IOBase *>& getPeripherals() const {
+    return m_peripherals;
+  }
+
 signals:
   void memoryMapChanged();
   void peripheralRemoved(QObject *peripheral);

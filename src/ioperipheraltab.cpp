@@ -41,6 +41,21 @@ IOPeripheralTab::IOPeripheralTab(QWidget *parent, IOBase *peripheral)
 
   connect(peripheral, &IOBase::paramsChanged, this,
           &IOPeripheralTab::updateExportsInfo);
+
+  //rufi
+  //connect(peripheral, &IOBase::paramsChanged, this, [=]{
+        // &IOPeripheralTab::updateExportsInfo;
+        //const auto &paramsiotab = peripheral->parameters();
+        // qDebug() << "just for breakpoint";
+        // });
+
+  //rufi
+  //Each time a peripheral is set up, the code passes form here before launching the GUI.
+  //So if there are 4 peripherals it stops here 4 times in a row.
+  //I think here you get only default values of params and regs
+  /*auto symbols = IOManager::get().assemblerSymbolsForPeriph(m_peripheral);
+  const auto &reg = m_peripheral->registers(); //you get the list of registers (like hundreds of leds values)
+  const auto &params = m_peripheral->parameters(); //you get height, width, size or other parameters proper of each peripheral*/
 }
 
 void IOPeripheralTab::updateExportsInfo() {
