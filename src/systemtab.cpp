@@ -1,64 +1,23 @@
 #include "systemtab.h"
-#include "ui_systemtab.h"
-// #include "iomanager.h" in .h
 #include "hwdescription.h"
 #include "processorhandler.h"
+#include "ui_systemtab.h"
 
-#include <QGraphicsItem>
-#include <QGraphicsRectItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QListWidgetItem>
-#include <QPushButton>
-#include <QToolBar>
-#include <QVBoxLayout>
-#include <QVector>
-#include <iostream>
-
-#include <QBrush>
-#include <QGraphicsLineItem>
-#include <QGraphicsTextItem>
-#include <QPen>
-#include <QPropertyAnimation>
-#include <QToolTip>
+// #include <QGraphicsItem>
+// #include <QPushButton>
+// #include <QToolBar>
+// #include <QVBoxLayout>
+// #include <QVector>
+// #include <iostream>
+// #include <QBrush>
+// #include <QGraphicsLineItem>
+// #include <QGraphicsTextItem>
+// #include <QPen>
+// #include <QPropertyAnimation>
+// #include <QToolTip>
 #include <QWheelEvent>
-//
 
 namespace Ripes {
-
-// QVector<SystemBlock*> blocksVector; // = {};
-//  Get the list of all active peripherals
-// auto activePeripherals = Ripes::IOManager::get().getPeripherals();
-// //Declaration of reference variable requires initialization int
-// nbActivePeripherals; auto processorID = Ripes::ProcessorHandler::getID();
-
-SystemBlock::SystemBlock(BlockType type, std::string name, qreal x, qreal y,
-                         qreal width, qreal height, QGraphicsItem *parent)
-    : QGraphicsRectItem(x, y, width, height, parent), m_type(type),
-      m_name(name) {
-
-  // For each instantiated rectangle, create and place a lable
-  m_label = new QGraphicsTextItem(QString::fromStdString(name), this);
-  m_label->setPos(x, y);
-  cpuLabelPosition =
-      rect().center() - QPointF(m_label->boundingRect().width() / 2,
-                                m_label->boundingRect().height() / 2);
-  m_label->setPos(cpuLabelPosition);
-}
-
-void SystemBlock::updateLabel(const QString &newName) {
-  m_label->setPlainText(newName);
-}
-
-// Arrow::Arrow(SystemBlock *startItem, SystemBlock *endItem, const QColor
-// &color, int distanceFromBus) {
-
-// Set pen for the arrow line
-/*QPen pen(color, 4); // Set the line thickness to 4 (adjust as needed)
-pen.setCapStyle(Qt::FlatCap); // Set round line cap for smoother ends
-arrowLine->setPen(pen);*/
-// scene->addItem(arrowLine);
-//}
 
 SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
     : RipesTab(toolbar, parent), m_ui(new Ui::SystemTab) {
@@ -73,9 +32,7 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
       {static_cast<int>(width * 0.8), static_cast<int>(width * 0.2)});
 
   // Get the current active peripherals
-  auto activePeripherals =
-      Ripes::IOManager::get().getPeripherals(); // it's a set: not ordered, not
-                                                // accessible by indexes
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
   int nbActivePeripherals = activePeripherals.size();
 
   // Create the three main, fixed blocks
@@ -89,30 +46,18 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
       new SystemBlock(MEMORY, "Memory",
                       startSceneX + baseSpaceBetweenBlocks + baseBlockDimension,
                       startSceneY, baseBlockDimension, baseBlockDimension);
-  busRect = new SystemBlock(
-      BUS, "Bus", startSceneX - baseSpaceBetweenBlocks,
-      startSceneY + baseBlockDimension + baseDistanceFromBus,
-      (baseBlockDimension + baseSpaceBetweenBlocks) * nbActivePeripherals +
-          baseSpaceBetweenBlocks,
-      baseBusHeight);
+  busRect =
+      new SystemBlock(BUS, "Bus", startSceneX - baseSpaceBetweenBlocks,
+                      startSceneY + baseBlockDimension + baseDistanceFromBus,
+                      busLength(nbActivePeripherals), baseBusHeight);
 
   // Create a list of the blocks in the scheme
   blocksVector = {};
-  blocksVector.append(cpuRect);    // Adjust the dimensions as needed
-  blocksVector.append(memoryRect); // Adjust the dimensions as needed
-  blocksVector.append(busRect);    // Adjust the dimensions as needed
+  blocksVector.append(cpuRect);
+  blocksVector.append(memoryRect);
+  blocksVector.append(busRect);
 
-  // For each active peripheral, check its base name and increment the
-  // corresponding counter
-  /*for (int i=0; i<nbActivePeripherals; i++) {
-    std::set<IOBase*>::iterator it = activePeripherals.begin();
-    blocksVector.append(new QGraphicsRectItem(*it->baseName(), 0+50*i+15*i, 125,
-  50, 50));
-    ++it; // Avanza all'elemento successivo
-  }*/
-
-  // Add the blocks of the peripherals, according to the ones that are currently
-  // active
+  // Add the blocks of the peripherals, according to the currently active ones
   int spaceOffset = 0;
   for (const Ripes::IOBase *periph : activePeripherals) {
     blocksVector.append(
@@ -127,14 +72,13 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
     spaceOffset++;
   }
 
-  // Add all the blocks to the scene and the corresponding name to the list
+  // Create the scene and everything that you want to see in it (blocks, labels
+  // and later the arrows) Add the name of each block to the list Add an arrow
+  // between each block and the bus
   scene = new QGraphicsScene(this);
-  // QPainter p(this);
-  // QPainter* painter = &p;
-  // QPainter* painter = new QPainter(); //calls begin automatically (end when
-  // deconstructed)
   for (const auto &element : blocksVector) {
     scene->addItem(element);
+    scene->addItem(&element->getLabel());
     setItemStyles(element, Qt::gray);
     m_ui->myListWidget->addItem(element->getQName());
     if (element->getBlockType() != BUS) {
@@ -156,13 +100,23 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
   // of the memory map
   connect(m_ui->myListWidget, &QListWidget::itemClicked, this,
           &SystemTab::onListItemClicked);
-  connect(&IOManager::get(), &IOManager::memoryMapChanged, this, [=]() {
-    updateSystemTab();
-  }); // to give the argument to updatesystemtab -> lambda function -> no need
-      // of receiver in connect
+  connect(&IOManager::get(), &IOManager::memoryMapChanged, this,
+          [=]() { updateSystemTab(); });
 }
 
-SystemTab::~SystemTab() { delete m_ui; }
+// these are the items created with "new": you have to delete them when
+// deconstructing the Tab. Each Tab is created with "new" in the mainwindow.cpp,
+// so somewhere (either it is automatic or it is done in the deconstructor of
+// the FancyTabBar) "delete SystemTab" will be called. I HAVE ADDED THE FIRST
+// ONES, NOT m_ui!!
+SystemTab::~SystemTab() {
+  delete scene;
+  delete view;
+  delete cpuRect;
+  delete memoryRect;
+  delete busRect;
+  delete m_ui;
+}
 
 void SystemTab::onListItemClicked(QListWidgetItem *item) {
   // When an item of the list is clicked, the corresponding block is selected
@@ -185,73 +139,28 @@ void SystemTab::setItemStyles(SystemBlock *item, const QColor &color) {
 }
 
 void SystemTab::updateSystemTab() {
-  /*QVector<int> indexesToDelete = {};
-  int index = 0;
-
-
-  for(const auto& element : blocksVector){
-    if(element->getBlockType() == Ripes::CPU){
-      element -> setName(processorIDToQString(thisID).toStdString());
-      //qDebug() << element->getQName().toStdString();
-    }
-    if(element->getBlockType() == Ripes::BUS){
-      element -> setRect(-10, 75, 65 * nbActivePeripherals + 20, 25);
-      //qDebug() << element->getQName().toStdString();
-    }
-    if(element->getBlockType() == Ripes::PERIPHERAL){
-      //qDebug() << element->getQName().toStdString() << "will be removed
-  removed";
-      //blocksVector.removeOne(element);
-      indexesToDelete.append(index);
-      //delete element; //free memory
-    }
-    index++;
-  }
-
-  //from the last to the first element of indexestodelete because they are in
-  increasing order and will make deletion crash for(int
-  i=indexesToDelete.size()-1; i>=0; i--){
-    scene->removeItem(blocksVector[indexesToDelete[i]]);
-    delete blocksVector[indexesToDelete[i]];
-    blocksVector.remove(indexesToDelete[i]);
-  }*/
-
-  auto activePeripherals =
-      Ripes::IOManager::get()
-          .getPeripherals(); // must re-call it every time to get the new
-                             // peripherals (it is a reference, not a pointer)
+  // must re-call it every time to get the new peripherals (it is a reference,
+  // not a pointer)
+  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
   int nbActivePeripherals = activePeripherals.size();
-  deletePeripheralBlocks(
-      nbActivePeripherals); // after this function all the blocks are removed
-                            // from the blocksVector and from the scene
+  // After the following function all the peripheral blocks are removed from the
+  // blocksVector and from the scene The non-peripheral blocks are just updated,
+  // not removed from the vector
+  deletePeripheralBlocks(nbActivePeripherals);
+  // If there is any peripheral, add all of them in the blocksVector
   if (nbActivePeripherals > 0) {
     addNewPeripherals(activePeripherals);
   }
-
-  /*if (scene) {
-    //scene->clear(); this will somehow invalidate the rects too...
-    for(const auto& block : blocksVector){
-      //Add only the peripherals because the cpu, memory and bus are already
-  (and always) there. if(block->getBlockType() == Ripes::PERIPHERAL){
-        scene->addItem(block);
-        setItemStyles(block, Qt::gray);
-        m_ui->myListWidget->addItem(block->getQName());
-      }
-    }
-  } else {
-    std::cerr << "Error: scene is null." << std::endl;
-  }*/
 }
 
-void SystemTab::deletePeripheralBlocks(
-    int nbActivePeripherals) { // DELETE ALSO ARROW!! Maybe include it in the
-                               // SystemBlock class?
-  const Ripes::ProcessorID &processorID =
-      Ripes::ProcessorHandler::getID(); // must re-call it every time to get the
-                                        // new ID (it is a reference, not a
-                                        // pointer)
+void SystemTab::deletePeripheralBlocks(int nbActivePeripherals) {
+  // must re-call it every time to get the new ID (it is a reference, not a
+  // pointer)
+  const Ripes::ProcessorID &processorID = Ripes::ProcessorHandler::getID();
   m_ui->myListWidget->clear();
 
+  // Delete a block from the blocksVector only if the lambda function return
+  // "true"
   blocksVector.erase(
       std::remove_if(
           blocksVector.begin(), blocksVector.end(),
@@ -266,10 +175,7 @@ void SystemTab::deletePeripheralBlocks(
               element->setRect(startSceneX - baseSpaceBetweenBlocks,
                                startSceneY + baseBlockDimension +
                                    baseDistanceFromBus,
-                               (baseBlockDimension + baseSpaceBetweenBlocks) *
-                                       nbActivePeripherals +
-                                   baseSpaceBetweenBlocks,
-                               baseBusHeight);
+                               busLength(nbActivePeripherals), baseBusHeight);
               m_ui->myListWidget->addItem(element->getQName());
               return false;
             } else if (element->getBlockType() == Ripes::MEMORY) {
@@ -277,7 +183,7 @@ void SystemTab::deletePeripheralBlocks(
               return false;
             } else if (element->getBlockType() == Ripes::PERIPHERAL) {
               scene->removeItem(element);
-              delete element; // free memory. I think it is needed since I have
+              delete element; // free memory. It is needed since I have
                               // created the element using "new". Arrow wasn't,
                               // for example.
               return true;
@@ -304,16 +210,29 @@ void SystemTab::addNewPeripherals(std::set<IOBase *> &activePeripherals) {
     blocksVector.append(newBlock);
     spaceOffset++;
     scene->addItem(newBlock);
+    scene->addItem(&newBlock->getLabel());
     setItemStyles(newBlock, Qt::gray);
     connectItemsWithArrow(newBlock, busRect, Qt::red);
     m_ui->myListWidget->addItem(newBlock->getQName());
   }
 }
 
+int SystemTab::busLength(int nbActivePeripherals) {
+  // default value: bus for cpu and memory only
+  int busLengthValue = (baseBlockDimension + baseSpaceBetweenBlocks) * 2 +
+                       baseSpaceBetweenBlocks;
+  if (nbActivePeripherals > 2) {
+    busLengthValue =
+        (baseBlockDimension + baseSpaceBetweenBlocks) * nbActivePeripherals +
+        baseSpaceBetweenBlocks;
+  }
+  return busLengthValue;
+}
+
 void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
                                       SystemBlock *endItem,
                                       const QColor &color) {
-  // QGraphicsLineItem *arrowLine;
+  // Two cases: peripheral arrows arrive below the bus, the others above
   if (startItem->getBlockType() == PERIPHERAL) {
     startItem->getArrow().getArrowLine().setLine(
         startItem->sceneBoundingRect().center().x(),
@@ -329,52 +248,30 @@ void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
         startItem->sceneBoundingRect().center().x(),
         endItem->sceneBoundingRect().y() - baseDistanceFromBus / 4);
   }
-  startItem->getArrow().getArrowLine().setPen(QPen(color, 4));
-  // Set pen for the arrow line
-  // QPen pen(color, 4); // Set the line thickness to 4 (adjust as needed)
-  /*startItem->getArrow().getPen().setColor(color);
-  startItem->getArrow().getPen().setCapStyle(Qt::FlatCap); // Set round line cap
-  for smoother ends arrowLine->setPen(pen);*/
-  QGraphicsLineItem &line = startItem->getArrow().getArrowLine();
-  scene->addItem(&line);
+  // Set style of the arrow
+  startItem->getArrow().getArrowLine().setPen(QPen(color, arrowThickness));
+
+  // Add arrow to the scene
+  scene->addItem(&startItem->getArrow().getArrowLine());
 
   // Tooltip for arrow line
   startItem->getArrow().getArrowLine().setToolTip("Wishbone bus");
 
-  // Qt Forum
-  // QPainter* painter = new QPainter();
-
-  // painter->setRenderHint(QPainter::Antialiasing, true);
-
-  // qreal arrowSize = 5; // size of head
-  // painter->setPen(Qt::NoPen);
-  // painter->setBrush(Qt::red);
+  // Add tips to the arrow
   int reverse = 1;
   if (startItem->getBlockType() != PERIPHERAL) {
     reverse = -1;
   }
-
-  // double angleUp = std::atan2(arrowLine->line().dy(),
-  // -arrowLine->line().dx());
-  QPointF arrowP1Up =
-      startItem->getArrow().getArrowLine().line().p2() +
-      QPointF(5, 0); // QPointF(sin(angleUp + M_PI / 3) * arrowSize, cos(angleUp
-                     // + M_PI / 3) * arrowSize * reverse);
-  QPointF arrowP2Up =
-      startItem->getArrow().getArrowLine().line().p2() -
-      QPointF(5, 0); //+QPointF(sin(angleUp + M_PI - M_PI / 3) * arrowSize,
-                     // cos(angleUp + M_PI - M_PI / 3) * arrowSize * reverse);
-
-  // double angleDown = std::atan2(-arrowLine->line().dy(),
-  // arrowLine->line().dx());
-  QPointF arrowP1Down =
-      startItem->getArrow().getArrowLine().line().p1() +
-      QPointF(5, 0); //+ QPointF(sin(angleDown + M_PI / 3) * arrowSize,
-                     // cos(angleDown + M_PI / 3) * arrowSize * reverse);
-  QPointF arrowP2Down =
-      startItem->getArrow().getArrowLine().line().p1() -
-      QPointF(5, 0); // QPointF(sin(angleDown + M_PI - M_PI / 3) * arrowSize,
-                     // cos(angleDown + M_PI - M_PI / 3) * arrowSize * reverse);
+  // Points of the base of the triangle tip1
+  QPointF arrowP1Up = startItem->getArrow().getArrowLine().line().p2() +
+                      QPointF(arrowThickness, 0);
+  QPointF arrowP2Up = startItem->getArrow().getArrowLine().line().p2() -
+                      QPointF(arrowThickness, 0);
+  // Points of the base of the triangle tip2
+  QPointF arrowP1Down = startItem->getArrow().getArrowLine().line().p1() +
+                        QPointF(arrowThickness, 0);
+  QPointF arrowP2Down = startItem->getArrow().getArrowLine().line().p1() -
+                        QPointF(arrowThickness, 0);
 
   QPolygonF arrowHeadUp, arrowHeadDown;
   arrowHeadUp.clear();
@@ -385,41 +282,23 @@ void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
   arrowHeadDown << startItem->getArrow().getArrowLine().line().p1() +
                        QPointF(0, baseDistanceFromBus / 4) * reverse
                 << arrowP1Down << arrowP2Down;
-  // painter->drawLine(arrowLine->line());
-  // painter->drawPolygon(arrowHeadUp);
-  // painter->drawPolygon(arrowHeadDown);
 
-  // Create a QGraphicsPolygonItem on the stack and set its polygon
-  // QGraphicsPolygonItem arrowHeadItemUp(arrowHeadUp); //won't appear if I
-  // declare them like this because they fgo on the stack and their like
-  // finishes when the } of the function arrives... QGraphicsPolygonItem
-  // arrowHeadItemDown(arrowHeadDown); QGraphicsPolygonItem *arrowHeadItemUp =
-  // new QGraphicsPolygonItem(arrowHeadUp);
+  // Now use the temporary, scope-limited points/polygons just defined to update
+  // the already existing ItemUp and ItemDown (they were created and
+  // default-initialized when the block was created and so the m_arrow attribute
+  // was created) This avoids:
+  // 1. Using "new"
+  // 2. Using QPolygonItem ItemUp(arrowHeadUp) that is scope-limited, so will
+  // desappear from the scene when the final "}" of this function arrives
   startItem->getArrow().getArrowHeadItemUp().setPolygon(arrowHeadUp);
-  // QGraphicsPolygonItem *arrowHeadItemDown = new
-  // QGraphicsPolygonItem(arrowHeadDown);
   startItem->getArrow().getArrowHeadItemDown().setPolygon(arrowHeadDown);
-  // Set the brush color to red
+  // Set the color of the tip items
   startItem->getArrow().getArrowHeadItemUp().setBrush(QBrush(Qt::red));
   startItem->getArrow().getArrowHeadItemDown().setBrush(QBrush(Qt::red));
-  // arrowHeadItemDown->setBrush(QBrush(Qt::red));
 
   // Add the QGraphicsPolygonItem to the scene
   scene->addItem(&startItem->getArrow().getArrowHeadItemUp());
-  // scene->addItem(arrowHeadItemDown);
   scene->addItem(&startItem->getArrow().getArrowHeadItemDown());
-
-  /*QGraphicsPolygonItem *arrowHeadItemUp = new
-  QGraphicsPolygonItem(arrowHeadUp); QGraphicsPolygonItem *arrowHeadItemDown =
-  new QGraphicsPolygonItem(arrowHeadDown);
-
-  arrowHeadItemUp->setPen(QColorConstants::Red);
-  arrowHeadItemUp->setBrush(QBrush(Qt::red));
-  arrowHeadItemDown->setPen(QColorConstants::Red);
-  arrowHeadItemDown->setBrush(QBrush(Qt::red));
-
-  scene->addItem(arrowHeadItemUp);
-  scene->addItem(arrowHeadItemDown);*/
 }
 
 // ADD MEMORY MAP IN THE LIST!
@@ -448,23 +327,25 @@ void SystemTabView::wheelEvent(
   }
 }
 
-/*void Arrow::updateArrowLine(QGraphicsItem* startItem, QGraphicsItem* endItem,
-qreal baseDistanceFromBus) {
-  // Verifica se m_arrowLine è già stato allocato precedentemente
-  if (!m_arrowLine) {
-    m_arrowLine = new QGraphicsLineItem();
-  }
+SystemBlock::SystemBlock(BlockType type, std::string name, qreal x, qreal y,
+                         qreal width, qreal height, QGraphicsItem *parent)
+    : QGraphicsRectItem(x, y, width, height, parent), m_type(type),
+      m_name(name) {
 
-         // Modifica m_arrowLine con i nuovi valori
+  // For each instantiated rectangle, set the value of and place the m_lable
+  m_label.setPlainText(QString::fromStdString(name));
+  labelPosition =
+      rect().center() - QPointF(m_label.boundingRect().width() / 2,
+                                m_label.boundingRect().height() / 2);
+  m_label.setPos(labelPosition);
+}
 
-
-  m_arrowLine->setLine(
-      startItem->sceneBoundingRect().center().x(),
-      startItem->sceneBoundingRect().y() - baseDistanceFromBus / 4,
-      startItem->sceneBoundingRect().center().x(),
-      endItem->sceneBoundingRect().y() + endItem->sceneBoundingRect().height() +
-baseDistanceFromBus / 4
-      );
-}*/
+void SystemBlock::updateLabel(const QString &newName) {
+  m_label.setPlainText(newName);
+  labelPosition =
+      rect().center() - QPointF(m_label.boundingRect().width() / 2,
+                                m_label.boundingRect().height() / 2);
+  m_label.setPos(labelPosition);
+}
 
 } // namespace Ripes
