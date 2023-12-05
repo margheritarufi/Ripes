@@ -67,6 +67,11 @@ qt6_add_resources(EXAMPLES_SRC ${CMAKE_SOURCE_DIR}/examples/examples.qrc)
 qt6_add_resources(LAYOUTS_SRC ${CMAKE_SOURCE_DIR}/src/processors/layouts.qrc)
 qt6_add_resources(FONTS_SRC ${CMAKE_SOURCE_DIR}/resources/fonts/fonts.qrc)
 
+#rufi#
+qt6_add_resources(HWDESCRSS_SRC ${CMAKE_SOURCE_DIR}/resources/multiplestageshw/multiplestageshw.qrc)
+qt6_add_resources(HWDESCRMS_SRC ${CMAKE_SOURCE_DIR}/resources/singlestagehw/singlestagehw.qrc)
+#end rufi#
+
 ######################################################################
 ## Library setup
 ######################################################################
@@ -115,7 +120,7 @@ if(RIPES_BUILD_TESTS)
 endif()
 
 set(APP_NAME Ripes)
-qt_add_executable(${APP_NAME} ${SYSTEM_FLAGS} ${ICONS_SRC} ${EXAMPLES_SRC} ${LAYOUTS_SRC} ${FONTS_SRC} main.cpp)
+qt_add_executable(${APP_NAME} ${SYSTEM_FLAGS} ${ICONS_SRC} ${EXAMPLES_SRC} ${LAYOUTS_SRC} ${FONTS_SRC} ${HWDESCRSS_SRC} ${HWDESCRMS_SRC} main.cpp) #hwdescr added by rufi
 
 # Link Qt libraries
 target_link_libraries(${APP_NAME} PUBLIC Qt6::Core Qt6::Widgets)
