@@ -26,19 +26,19 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
 
   const Ripes::ProcessorID &processorID = Ripes::ProcessorHandler::getID();
 
-  // Set initial dimensions of the splitter
+         // Set initial dimensions of the splitter
   int width = this->width(); // Width of the tab window
   m_ui->splitter->setSizes(
       {static_cast<int>(width * 0.8), static_cast<int>(width * 0.2)});
 
-  // Get the current active peripherals
+         // Get the current active peripherals
   auto activePeripherals = Ripes::IOManager::get().getPeripherals();
   int nbActivePeripherals = activePeripherals.size();
 
-  // Create the three main, fixed blocks
-  // MAYBE CREATE A FUNCTION LIKE SETBLOCK (usable only for these 3 because
-  // their pointers already exists, while for the peripherals I cannot tell how
-  // many pointers I will need)
+         // Create the three main, fixed blocks
+         // MAYBE CREATE A FUNCTION LIKE SETBLOCK (usable only for these 3 because
+         // their pointers already exists, while for the peripherals I cannot tell how
+         // many pointers I will need)
   cpuRect = new SystemBlock(
       CPU, processorIDToQString(processorID).toStdString(), startSceneX,
       startSceneY, baseBlockDimension, baseBlockDimension);
@@ -51,16 +51,19 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
                       startSceneY + baseBlockDimension + baseDistanceFromBus,
                       busLength(nbActivePeripherals), baseBusHeight);
 
-  // Create a list of the blocks in the scheme
+         //Set tooltip for memory block with the address range
+  memoryRect->setToolTip("Address range: x00000000 - xefffffff");
+
+         // Create a list of the blocks in the scheme
   blocksVector = {};
   blocksVector.append(cpuRect);
   blocksVector.append(memoryRect);
   blocksVector.append(busRect);
 
-  // Add the blocks of the peripherals, according to the currently active ones
+         // Add the blocks of the peripherals, according to the currently active ones
   int spaceOffset = 0;
   for (const Ripes::IOBase *periph : activePeripherals) {
-    blocksVector.append(
+    SystemBlock *newBlock =
         new SystemBlock(PERIPHERAL,
                         periph->baseName().toStdString() + " " +
                             std::to_string(periph->getm_id()),
@@ -68,13 +71,23 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
                             baseSpaceBetweenBlocks * spaceOffset,
                         startSceneY + baseBlockDimension +
                             baseDistanceFromBus * 2 + baseBusHeight,
-                        baseBlockDimension, baseBlockDimension));
+                        baseBlockDimension, baseBlockDimension);
+    blocksVector.append(newBlock);
+
+           //Set tooltip for each peripheral block with the address range
+    const Ripes::MemoryMap *myMemMap = &Ripes::IOManager::get().memoryMap();
+    for (const auto &entry : *myMemMap) {
+      if (entry.second.name == newBlock->getQName()){
+        newBlock->setToolTip("Address range: x" +  QString::number(entry.second.startAddr, 16) + " - x" + QString::number(entry.second.startAddr + entry.second.size - 1, 16));
+        break;
+      }
+    }
     spaceOffset++;
   }
 
-  // Create the scene and everything that you want to see in it (blocks, labels
-  // and later the arrows) Add the name of each block to the list Add an arrow
-  // between each block and the bus
+         // Create the scene and everything that you want to see in it (blocks, labels
+         // and later the arrows) Add the name of each block to the list Add an arrow
+         // between each block and the bus
   scene = new QGraphicsScene(this);
   for (const auto &element : blocksVector) {
     scene->addItem(element);
@@ -83,11 +96,14 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
     m_ui->myListWidget->addItem(element->getQName());
     if (element->getBlockType() != BUS) {
       connectItemsWithArrow(element, busRect, Qt::red);
+      if (element -> getBlockType() == CPU){
+        connectItemsWithSecondArrow(element, busRect, Qt::red);
+      }
     }
   }
 
-  // Create view with the scene, add it to the grid layout and change some
-  // settings
+         // Create view with the scene, add it to the grid layout and change some
+         // settings
   view = new SystemTabView(this);
   view->setScene(scene);
   m_ui->myGridLayout->addWidget(view);
@@ -96,8 +112,8 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
   view->setDragMode(QGraphicsView::ScrollHandDrag);
   view->setInteractive(true);
 
-  // Do the connection to handle the click on an item of the list and the change
-  // of the memory map
+         // Do the connection to handle the click on an item of the list and the change
+         // of the memory map
   connect(m_ui->myListWidget, &QListWidget::itemClicked, this,
           &SystemTab::onListItemClicked);
   connect(&IOManager::get(), &IOManager::memoryMapChanged, this,
@@ -159,8 +175,8 @@ void SystemTab::deletePeripheralBlocks(int nbActivePeripherals) {
   const Ripes::ProcessorID &processorID = Ripes::ProcessorHandler::getID();
   m_ui->myListWidget->clear();
 
-  // Delete a block from the blocksVector only if the lambda function return
-  // "true"
+         // Delete a block from the blocksVector only if the lambda function return
+         // "true"
   blocksVector.erase(
       std::remove_if(
           blocksVector.begin(), blocksVector.end(),
@@ -209,6 +225,16 @@ void SystemTab::addNewPeripherals(std::set<IOBase *> &activePeripherals) {
                                              // the one of bus in a variable
     blocksVector.append(newBlock);
     spaceOffset++;
+
+           //Set tooltip for each peripheral block with the address range
+    const Ripes::MemoryMap *myMemMap = &Ripes::IOManager::get().memoryMap();
+    for (const auto &entry : *myMemMap) {
+      if (entry.second.name == newBlock->getQName()){
+        newBlock->setToolTip("Address range: x" +  QString::number(entry.second.startAddr, 16) + " - x" + QString::number(entry.second.startAddr + entry.second.size - 1, 16));
+        break;
+      }
+    }
+
     scene->addItem(newBlock);
     scene->addItem(&newBlock->getLabel());
     setItemStyles(newBlock, Qt::gray);
@@ -251,13 +277,18 @@ void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
   // Set style of the arrow
   startItem->getArrow().getArrowLine().setPen(QPen(color, arrowThickness));
 
-  // Add arrow to the scene
+         // Add arrow to the scene
   scene->addItem(&startItem->getArrow().getArrowLine());
 
-  // Tooltip for arrow line
-  startItem->getArrow().getArrowLine().setToolTip("Wishbone bus");
+         // Tooltip for arrow line
+         // Tooltip for arrow line
+  if (startItem->getBlockType() == CPU){
+    startItem->getArrow().getArrowLine().setToolTip("Wishbone bus signals for instructions");
+  } else {
+    startItem->getArrow().getArrowLine().setToolTip("Wishbone bus signals");
+  }
 
-  // Add tips to the arrow
+         // Add tips to the arrow
   int reverse = 1;
   if (startItem->getBlockType() != PERIPHERAL) {
     reverse = -1;
@@ -283,23 +314,94 @@ void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
                        QPointF(0, baseDistanceFromBus / 4) * reverse
                 << arrowP1Down << arrowP2Down;
 
-  // Now use the temporary, scope-limited points/polygons just defined to update
-  // the already existing ItemUp and ItemDown (they were created and
-  // default-initialized when the block was created and so the m_arrow attribute
-  // was created) This avoids:
-  // 1. Using "new"
-  // 2. Using QPolygonItem ItemUp(arrowHeadUp) that is scope-limited, so will
-  // desappear from the scene when the final "}" of this function arrives
+         // Now use the temporary, scope-limited points/polygons just defined to update
+         // the already existing ItemUp and ItemDown (they were created and
+         // default-initialized when the block was created and so the m_arrow attribute
+         // was created) This avoids:
+         // 1. Using "new"
+         // 2. Using QPolygonItem ItemUp(arrowHeadUp) that is scope-limited, so will
+         // desappear from the scene when the final "}" of this function arrives
   startItem->getArrow().getArrowHeadItemUp().setPolygon(arrowHeadUp);
   startItem->getArrow().getArrowHeadItemDown().setPolygon(arrowHeadDown);
   // Set the color of the tip items
   startItem->getArrow().getArrowHeadItemUp().setBrush(QBrush(Qt::red));
   startItem->getArrow().getArrowHeadItemDown().setBrush(QBrush(Qt::red));
 
-  // Add the QGraphicsPolygonItem to the scene
+         // Add the QGraphicsPolygonItem to the scene
   scene->addItem(&startItem->getArrow().getArrowHeadItemUp());
   scene->addItem(&startItem->getArrow().getArrowHeadItemDown());
 }
+
+void SystemTab::connectItemsWithSecondArrow(SystemBlock *startItem,
+                                      SystemBlock *endItem,
+                                      const QColor &color) {
+  // Two cases: peripheral arrows arrive below the bus, the others above
+  if (startItem->getBlockType() == PERIPHERAL) {
+    startItem->getSecondArrow().getArrowLine().setLine(
+        startItem->sceneBoundingRect().center().x() + baseSpaceBetweenBlocks,
+        startItem->sceneBoundingRect().y() - baseDistanceFromBus / 4,
+        startItem->sceneBoundingRect().center().x() + baseSpaceBetweenBlocks,
+        endItem->sceneBoundingRect().y() +
+            endItem->sceneBoundingRect().height() + baseDistanceFromBus / 4);
+  } else {
+    startItem->getSecondArrow().getArrowLine().setLine(
+        startItem->sceneBoundingRect().center().x() + baseSpaceBetweenBlocks,
+        startItem->sceneBoundingRect().height() +
+            startItem->sceneBoundingRect().y() + baseDistanceFromBus / 4,
+        startItem->sceneBoundingRect().center().x() + baseSpaceBetweenBlocks,
+        endItem->sceneBoundingRect().y() - baseDistanceFromBus / 4);
+  }
+  // Set style of the arrow
+  startItem->getSecondArrow().getArrowLine().setPen(QPen(color, arrowThickness));
+
+// Add arrow to the scene
+scene->addItem(&startItem->getSecondArrow().getArrowLine());
+
+// Tooltip for arrow line
+if (startItem->getBlockType() == CPU){
+ startItem->getSecondArrow().getArrowLine().setToolTip("Wishbone bus signals for data");
+} else {
+ startItem->getSecondArrow().getArrowLine().setToolTip("Wishbone signals bus");
+}
+
+// Add tips to the arrow
+int reverse = 1;
+if (startItem->getBlockType() != PERIPHERAL) {
+ reverse = -1;
+}
+// Points of the base of the triangle tip1
+QPointF arrowP1Up = startItem->getSecondArrow().getArrowLine().line().p2() +
+                   QPointF(arrowThickness, 0);
+QPointF arrowP2Up = startItem->getSecondArrow().getArrowLine().line().p2() -
+                   QPointF(arrowThickness, 0);
+// Points of the base of the triangle tip2
+QPointF arrowP1Down = startItem->getSecondArrow().getArrowLine().line().p1() +
+                     QPointF(arrowThickness, 0);
+QPointF arrowP2Down = startItem->getSecondArrow().getArrowLine().line().p1() -
+                     QPointF(arrowThickness, 0);
+
+QPolygonF arrowHeadUp, arrowHeadDown;
+arrowHeadUp.clear();
+arrowHeadDown.clear();
+arrowHeadUp << startItem->getSecondArrow().getArrowLine().line().p2() -
+                  QPointF(0, baseDistanceFromBus / 4) * reverse
+           << arrowP1Up << arrowP2Up;
+arrowHeadDown << startItem->getSecondArrow().getArrowLine().line().p1() +
+                    QPointF(0, baseDistanceFromBus / 4) * reverse
+             << arrowP1Down << arrowP2Down;
+
+startItem->getSecondArrow().getArrowHeadItemUp().setPolygon(arrowHeadUp);
+startItem->getSecondArrow().getArrowHeadItemDown().setPolygon(arrowHeadDown);
+// Set the color of the tip items
+startItem->getSecondArrow().getArrowHeadItemUp().setBrush(QBrush(Qt::red));
+startItem->getSecondArrow().getArrowHeadItemDown().setBrush(QBrush(Qt::red));
+
+// Add the QGraphicsPolygonItem to the scene
+scene->addItem(&startItem->getSecondArrow().getArrowHeadItemUp());
+scene->addItem(&startItem->getSecondArrow().getArrowHeadItemDown());
+}
+
+// ADD MEMORY MAP IN THE LIST!
 
 /*******SystemTabView********/
 SystemTabView::SystemTabView(QWidget *parent) : QGraphicsView(parent) {
@@ -330,7 +432,7 @@ SystemBlock::SystemBlock(BlockType type, std::string name, qreal x, qreal y,
     : QGraphicsRectItem(x, y, width, height, parent), m_type(type),
       m_name(name) {
 
-  // For each instantiated rectangle, set the value of and place the m_lable
+         // For each instantiated rectangle, set the value of and place the m_lable
   m_label.setPlainText(QString::fromStdString(name));
   labelPosition =
       rect().center() - QPointF(m_label.boundingRect().width() / 2,

@@ -55,6 +55,9 @@ private:
   void addNewPeripherals(std::set<IOBase *> &activePeripherals);
   void connectItemsWithArrow(SystemBlock *startItem, SystemBlock *endItem,
                              const QColor &color);
+  void connectItemsWithSecondArrow(SystemBlock *startItem,
+                                              SystemBlock *endItem,
+                                   const QColor &color);
   int busLength(int nbActivePeripherals);
 
 private slots:
@@ -103,6 +106,7 @@ public:
   void setName(std::string name) { m_name = name; }
   void updateLabel(const QString &newName);
   Arrow &getArrow() { return m_arrow; }
+  Arrow &getSecondArrow() { return m_secondarrow; }
   QGraphicsTextItem &getLabel() { return m_label; }
 
 private:
@@ -111,7 +115,9 @@ private:
   QGraphicsTextItem m_label; // perché pointer?
   QPointF labelPosition;
   Arrow m_arrow; // = nullptr;
-  QGraphicsPolygonItem m_arrowHeadItemUp;
+  //QGraphicsPolygonItem m_arrowHeadItemUp;
+  Arrow m_secondarrow; // = nullptr;
+  //QGraphicsPolygonItem m_secondarrowHeadItemUp;
 };
 
 } // namespace Ripes
