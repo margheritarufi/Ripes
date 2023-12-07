@@ -100,7 +100,7 @@ QString openDirectoryDialog() {
   // Create a dialog window to choose the directory where the folder will be
   // created
   QString QselectedPath = QFileDialog::getExistingDirectory(
-      nullptr, "Select directory where the folder will be created",
+      nullptr, "Select the directory where the folder will be created",
       QDir::homePath());
   if (!QselectedPath.isEmpty()) {
     std::cout << "Selected directory: " << QselectedPath.toStdString()
@@ -548,8 +548,8 @@ QString createDialogFolderName(QInputDialog &inputDialog) {
 // @return int with the result of the warning window
 int createWarningBox(QMessageBox &msgBox, QString localQfolderName) {
   msgBox.setIcon(QMessageBox::Warning);
-  msgBox.setText("The folder" + localQfolderName +
-                 "already exists. If you continue, its files will be "
+  msgBox.setText("The folder " + localQfolderName +
+                 " already exists. If you continue, its files will be "
                  "overwritten.\nDo you want to overwrite the existing files?");
   msgBox.addButton(QMessageBox::Yes);
   msgBox.addButton(QMessageBox::Cancel);

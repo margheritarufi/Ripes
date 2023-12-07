@@ -56,8 +56,11 @@ void ChartLineMarker::move(const QPointF &center) {
     const QValueAxis *axisX =
         qobject_cast<QValueAxis *>(m_chart->axes(Qt::Horizontal).constFirst());
 
-    // Note: we assume that the points are in a sorted order!
-    const auto &points = m_series->pointsVector();
+           // Note: we assume that the points are in a sorted order!
+    const auto &points = m_series->points();
+    if (points.size() == 0) {
+      return;
+    }
     const QPointF chartPos = m_chart->mapToValue(center);
     auto iter =
         std::lower_bound(points.begin(), points.end(), chartPos.x(),

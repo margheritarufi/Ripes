@@ -1,3 +1,5 @@
+//Memory module top level
+
 `include "ripes_params.vh"
 `include "designer_params.vh"
 
@@ -29,7 +31,5 @@ module memory
 	input [TGA_WIDTH-1:0] tga_i,
 	input [TGC_WIDTH-1:0] tgc_i
 );
-
-//logic
 
 endmodule

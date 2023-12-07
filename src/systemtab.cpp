@@ -112,9 +112,9 @@ SystemTab::SystemTab(QToolBar *toolbar, QWidget *parent)
 SystemTab::~SystemTab() {
   delete scene;
   delete view;
-  delete cpuRect;
+  /*delete cpuRect;
   delete memoryRect;
-  delete busRect;
+  delete busRect;*/ //if I uncomment: C:\Users\margh\OneDrive\Desktop\build-RipesTest2-Desktop_Qt_6_5_3_MSVC2019_64bit-Debug\Ripes.exe crashed. Why?
   delete m_ui;
 }
 
@@ -300,8 +300,6 @@ void SystemTab::connectItemsWithArrow(SystemBlock *startItem,
   scene->addItem(&startItem->getArrow().getArrowHeadItemUp());
   scene->addItem(&startItem->getArrow().getArrowHeadItemDown());
 }
-
-// ADD MEMORY MAP IN THE LIST!
 
 /*******SystemTabView********/
 SystemTabView::SystemTabView(QWidget *parent) : QGraphicsView(parent) {

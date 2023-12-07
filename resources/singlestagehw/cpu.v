@@ -32,13 +32,4 @@ module cpu
 	output [TGC_WIDTH-1:0] tgc_o
 );
 
-//logic
-
 endmodule
-
-
-//I left all the signals of the Wishbone protol because I don't know how the design will be done
-//and therefore which signals will be used.
-//If some of these signals aren't used, they can be left undriven in the logic and unconnected/set to a default value in the toplevel.
-
-//interrupt signals to be added

@@ -1,10 +1,10 @@
-//Multiple stages cpu top level
+//Generic peripheral module top level
 
 `include "ripes_params.vh"
 `include "designer_params.vh"
 
 
-module cpu
+module peripheral
 #(  parameter ADDR_WIDTH = `ADDR_WIDTH,
 	parameter DATA_WIDTH = `DATA_WIDTH,
 	parameter TGDI_WIDTH = `TGDI_WIDTH,
@@ -17,19 +17,19 @@ module cpu
 	input clk_i,
 	input rst_i,
 	
-	output [ADDR_WIDTH-1:0]adr_o,
+	input [ADDR_WIDTH-1:0]adr_i,
 	
 	input [DATA_WIDTH-1:0]dat_i,
 	output [DATA_WIDTH-1:0]dat_o,
 	
-	input ack_i, err_i, rty_i,
-	output cyc_o, stb_o, lock_o, we_o,
-	output [SEL_WIDTH-1:0] sel_o,
+	output ack_o, err_o, rty_o,
+	input cyc_i, stb_i, lock_i, we_i,
+	input [SEL_WIDTH-1:0] sel_i,
 	
-	input [TGDI_WIDTH-1:0]tgd_i,
-	output [TGDO_WIDTH-1:0] tgd_o,
-	output [TGA_WIDTH-1:0] tga_o,
-	output [TGC_WIDTH-1:0] tgc_o
+	output [TGDO_WIDTH-1:0]tgd_o,
+	input [TGDI_WIDTH-1:0] tgd_i,
+	input [TGA_WIDTH-1:0] tga_i,
+	input [TGC_WIDTH-1:0] tgc_i
 );
 
 endmodule
