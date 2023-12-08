@@ -1,6 +1,6 @@
 //@file hwdescriptionioperiph.cpp
 //@author Margherita Rufi
-//@version 1.0 2023-11-26
+//@version 1.1 2023-12-08
 //@brief This file contains the functions used to write the parameters of the
 // peripherals in the ripes_params.vh file.
 
@@ -29,11 +29,11 @@ void writeNbPeriph(std::shared_ptr<std::ofstream> file) {
   counters.switchesCounter = 0;
   counters.dpadsCounter = 0;
 
-         // Get the list of all active peripherals
+  // Get the list of all active peripherals
   auto activePeripherals = Ripes::IOManager::get().getPeripherals();
 
-         // For each active peripheral, check its base name and increment the
-         // corresponding counter
+  // For each active peripheral, check its base name and increment the
+  // corresponding counter
   for (const Ripes::IOBase *peripheral : activePeripherals) {
     if (peripheral->baseName() == "LED Matrix") {
       counters.ledArraysCounter++;
@@ -46,11 +46,13 @@ void writeNbPeriph(std::shared_ptr<std::ofstream> file) {
     }
   }
 
-         // Write the number of active instantiations of each peripheral in
-         // ripes_params.vh
+  // Write the number of active instantiations of each peripheral in
+  // ripes_params.vh
   if (file->is_open()) {
     (*file) << "\n" << std::endl;
-    printVerilogDefine(file, "TOT_NB_PERIPHERALS ", counters.ledArraysCounter + counters.switchesCounter + counters.dpadsCounter);
+    printVerilogDefine(file, "TOT_NB_PERIPHERALS ",
+                       counters.ledArraysCounter + counters.switchesCounter +
+                           counters.dpadsCounter);
     printVerilogDefine(file, "NB_LED_MATRICES ", counters.ledArraysCounter);
     printVerilogDefine(file, "NB_SWITCH_SETS ", counters.switchesCounter);
     printVerilogDefine(file, "NB_DPADS ", counters.dpadsCounter);
@@ -72,8 +74,8 @@ void writePeriphParams(std::shared_ptr<std::ofstream> file) {
   // Get the list of all active peripherals
   auto activePeripherals = Ripes::IOManager::get().getPeripherals();
 
-         // For each active peripheral, check its base name and write its parameters
-         // in ripes_params.vh. Do some name formatting when needed.
+  // For each active peripheral, check its base name and write its parameters
+  // in ripes_params.vh. Do some name formatting when needed.
   if (file->is_open()) {
     for (Ripes::IOBase *peripheral : activePeripherals) { // it was const
       // LED matrices have 3 parameters: SIZE, WIDTH and HEIGHT
@@ -84,8 +86,8 @@ void writePeriphParams(std::shared_ptr<std::ofstream> file) {
           std::string peripheralParamSmall =
               peripheral->getParams()[param].name.toStdString();
 
-                 // Transform the param name in capital letters and replace spaces with
-                 // underscores
+          // Transform the param name in capital letters and replace spaces with
+          // underscores
           std::string peripheralParamCapital;
           std::transform(peripheralParamSmall.begin(),
                          peripheralParamSmall.end(),
@@ -101,7 +103,7 @@ void writePeriphParams(std::shared_ptr<std::ofstream> file) {
         }
       }
 
-             // D-Pads have 1 parameter: N
+      // D-Pads have 1 parameter: N
       if (typeid(*peripheral) == typeid(Ripes::IOSwitches)) {
         std::string peripheralBaseName = "SWITCHES";
         std::string peripheralID = std::to_string(peripheral->getm_id());

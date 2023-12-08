@@ -1,3 +1,9 @@
+//@file hwdescription.h
+//@author Margherita Rufi
+//@version 1.0 2023-11-26
+//@brief This file contains the declaration of the functions of
+//hwdescription.cpp.
+
 #include "processorregistry.h"
 #include "ripes_types.h"
 #include <QDebug>

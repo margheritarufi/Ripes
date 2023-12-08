@@ -1,3 +1,9 @@
+//@file systemtab.h
+//@author Margherita Rufi
+//@version 1.0 2023-12-08
+//@brief This file contains the declaration of the SystemTab class, the
+// SystemTabView class the SystemBlock class and the SystemArrow class.
+
 #pragma once
 
 #include <QGraphicsRectItem>
@@ -55,8 +61,7 @@ private:
   void addNewPeripherals(std::set<IOBase *> &activePeripherals);
   void connectItemsWithArrow(SystemBlock *startItem, SystemBlock *endItem,
                              const QColor &color);
-  void connectItemsWithSecondArrow(SystemBlock *startItem,
-                                              SystemBlock *endItem,
+  void connectItemsWithSecondArrow(SystemBlock *startItem, SystemBlock *endItem,
                                    const QColor &color);
   int busLength(int nbActivePeripherals);
 
@@ -87,7 +92,7 @@ public:
   QGraphicsPolygonItem &getArrowHeadItemDown() { return m_arrowHeadItemDown; }
 
 private:
-  QGraphicsLineItem m_arrowLine; // = nullptr; //it was *arrowLine
+  QGraphicsLineItem m_arrowLine;
   QPen m_pen;
   QGraphicsPolygonItem m_arrowHeadItemUp;
   QGraphicsPolygonItem m_arrowHeadItemDown;
@@ -112,12 +117,10 @@ public:
 private:
   BlockType m_type;
   std::string m_name;
-  QGraphicsTextItem m_label; // perché pointer?
+  QGraphicsTextItem m_label;
   QPointF labelPosition;
-  Arrow m_arrow; // = nullptr;
-  //QGraphicsPolygonItem m_arrowHeadItemUp;
-  Arrow m_secondarrow; // = nullptr;
-  //QGraphicsPolygonItem m_secondarrowHeadItemUp;
+  Arrow m_arrow;
+  Arrow m_secondarrow;
 };
 
 } // namespace Ripes

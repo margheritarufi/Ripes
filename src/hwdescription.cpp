@@ -1,6 +1,6 @@
 //@file hwdescription.cpp
 //@author Margherita Rufi
-//@version 1.0 2023-11-26
+//@version 1.2 2023-12-08
 //@brief This file contains the functions that create the verilog files that
 // describe the processor hardware.
 

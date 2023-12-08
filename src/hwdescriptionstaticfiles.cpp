@@ -1,9 +1,8 @@
-//@file hwdescription.cpp
+//@file hwdescriptionstaticfiles.cpp
 //@author Margherita Rufi
 //@version 1.0 2023-11-13
 //@brief This file contains the functions used to copy the files from the
-// resources
-// folder to the selected directory.
+// resources folder to the selected directory.
 
 #include "hwdescription.h"
 #include <QCoreApplication>

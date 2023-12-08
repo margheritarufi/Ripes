@@ -1,6 +1,6 @@
 //@file hwdescriptioncache.cpp
 //@author Margherita Rufi
-//@version 1.0 2023-11-26
+//@version 1.1 2023-12-08
 //@brief This file contains the functions used to write the parameters of the
 // processor'a cache in the params.vh file. The functions are called in the
 // function "downloadFiles" in the file "hwdescription.cpp".
@@ -33,12 +33,11 @@ bool valueInstrUpdated;
 std::shared_ptr<Ripes::CacheSim> dataCachePointer = nullptr;
 std::shared_ptr<Ripes::CacheSim> instrCachePointer = nullptr;
 
-//@brief saveNbWaysDataCache
-// This function saves the number of ways of the data cache selected by the user
-// in the variable "data_ways". It is called in two cases, both from the
-// cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of ways.
-// 2. After the launch of the GUI, any time the user changes the number of ways
+//@brief saveDataCacheSettings
+// This function saves the settings of the data cache selected by the user.
+// It is called in two cases, both from the cachewidget.cpp file:
+// 1. Before the launch of Ripes GUI, to get the default settingss.
+// 2. After the launch of the GUI, any time the user changes the settings
 // of the data cache.
 //
 //@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the data cache
@@ -54,6 +53,16 @@ void saveDataCacheSettings(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   valueDataUpdated = true;
 }
 
+//@brief saveDataCacheSettings
+// This function saves the settings of the instruction cache selected by the
+// user. It is called in two cases, both from the cachewidget.cpp file:
+// 1. Before the launch of Ripes GUI, to get the default settingss.
+// 2. After the launch of the GUI, any time the user changes the settings
+// of the instruction cache.
+//
+//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the data cache
+// simulator
+//@return void
 void saveInstrCacheSettings(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   instrWays = cacheSimPtr->getWaysBits();
   instrLines = cacheSimPtr->getLineBits();
@@ -64,93 +73,6 @@ void saveInstrCacheSettings(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
   valueInstrUpdated = true;
 }
 
-/*void saveDataCacheSimPointer(std::shared_ptr<Ripes::CacheSim> m_cacheSim){
-  dataCachePointer = m_cacheSim;
-}
-
-void saveInstrCacheSimPointer(std::shared_ptr<Ripes::CacheSim> m_cacheSim){
-  instrCachePointer = m_cacheSim;
-}*/
-
-/*void saveReplPolicyDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-  data_ways = cacheSimPtr->getWaysBits();
-}*/
-
-//@brief saveNbLinesDataCache
-// This function saves the number of lines of the data cache selected by the
-// user in the variable "data_lines". It is called in two cases, both from the
-// cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of lines.
-// 2. After the launch of the GUI, any time the user changes the number of lines
-// of the data cache.
-//
-//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the data cache
-// simulator
-//@return void
-/*void saveNbLinesDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-  data_lines = cacheSimPtr->getLineBits();
-}
-
-//@brief saveNbBlocksDataCache
-// This function saves the number of blocks of the data cache selected by the
-// user in the variable "data_blocks". It is called in two cases, both from the
-// cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of blocks.
-// 2. After the launch of the GUI, any time the user changes the number of
-// blocks of the data cache.
-//
-//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the data cache
-// simulator
-//@return void
-void saveNbBlocksDataCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-data_blocks = cacheSimPtr->getBlockBits();
-}
-
-//@brief saveNbWaysInstrCache
-// This function saves the number of ways of the instruction cache selected by
-// the user in the variable "instr_ways". It is called in two cases, both from
-// the cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of ways.
-// 2. After the launch of the GUI, any time the user changes the number of ways
-// of the instruction cache.
-//
-//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the
-// instruction cache simulator
-//@return void
-void saveNbWaysInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-instr_ways = cacheSimPtr->getWaysBits();
-}
-
-//@brief saveNbLinesInstrCache
-// This function saves the number of lines of the instruction cache selected by
-// the user in the variable "instr_lines". It is called in two cases, both from
-// the cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of lines.
-// 2. After the launch of the GUI, any time the user changes the number of lines
-// of the instruction cache.
-//
-//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the
-// instruction cache simulator
-//@return void
-void saveNbLinesInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-instr_lines = cacheSimPtr->getLineBits();
-}
-
-//@brief saveNbBlocksInstrCache
-// This function saves the number of blocks of the instruction cache selected by
-// the user in the variable "instr_blocks". It is called in two cases, both from
-// the cachewidget.cpp file:
-// 1. Before the launch of Ripes GUI, to get the default number of blocks.
-// 2. After the launch of the GUI, any time the user changes the number of
-// blocks of the instruction cache.
-//
-//@param std::shared_ptr<Ripes::CacheSim> cacheSimPtr: pointer to the
-// instruction cache simulator
-//@return void
-void saveNbBlocksInstrCache(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
-instr_blocks = cacheSimPtr->getBlockBits();
-}*/
-
 //@brief writeCacheSettings
 // This function is called in the function "downloadFiles" in the file
 // "hwdescription.cpp" and writes the parameters of the processor's cache in the
@@ -159,43 +81,31 @@ instr_blocks = cacheSimPtr->getBlockBits();
 //@param std::shared_ptr<std::ofstream> file: pointer to the file "params.vh"
 //@return void
 void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
-  /*dataWays = dataCachePointer->getWaysBits();
-  dataLines = dataCachePointer->getLineBits();
-  dataBlocks = dataCachePointer->getBlockBits();
-  dataWriteAllocPolicy = dataCachePointer->getWriteAllocPolicy();*/
-  //The WriteAllocatePolicy type assigns 0 to "Write Allocate" and 1 to "No Write ALlocate".
-  //It makes more sense to switch them.
-  //The first if is needed to avoid reverse value if save*CacheSettings() functions weren't called
-  if (valueDataUpdated == true){
-    if (dataWriteAllocPolicy == 0){
+  // The WriteAllocatePolicy type assigns 0 to "Write Allocate" and 1 to "No
+  // Write ALlocate". It makes more sense to switch them. The first if-clause is
+  // needed to avoid reverse value if save**CacheSettings() functions weren't
+  // called
+  if (valueDataUpdated == true) {
+    if (dataWriteAllocPolicy == 0) {
       tempWriteAllocPolicy = 1;
-    } else if (dataWriteAllocPolicy == 1){
+    } else if (dataWriteAllocPolicy == 1) {
       tempWriteAllocPolicy = 0;
     }
     dataWriteAllocPolicy = tempWriteAllocPolicy;
-    //Put back valueUpdated to false
+    // Put back valueUpdated to false
     valueDataUpdated = false;
   }
-  /*dataWritePolicy = dataCachePointer->getWritePolicy();
-  dataReplPolicy = dataCachePointer->getReplacementPolicy();
-  instrWays = instrCachePointer->getWaysBits();
-  instrLines = instrCachePointer->getLineBits();
-  instrBlocks = instrCachePointer->getBlockBits();
-  instrWriteAllocPolicy = instrCachePointer->getWriteAllocPolicy();*/
-  if (valueInstrUpdated == true){
-    if (instrWriteAllocPolicy == 0){
+  if (valueInstrUpdated == true) {
+    if (instrWriteAllocPolicy == 0) {
       tempWriteAllocPolicy = 1;
-    } else if (instrWriteAllocPolicy == 1){
+    } else if (instrWriteAllocPolicy == 1) {
       tempWriteAllocPolicy = 0;
     }
     instrWriteAllocPolicy = tempWriteAllocPolicy;
-    //Put back valueUpdated to false
+    // Put back valueUpdated to false
     valueInstrUpdated = false;
   }
 
-
-  /*instrWritePolicy = instrCachePointer->getWritePolicy();
-  instrReplPolicy = instrCachePointer->getReplacementPolicy();*/
   if (file->is_open()) {
     (*file) << "\n" << std::endl;
     printVerilogDefine(file, "WAYS_DATA_CACHE", std::pow(2, dataWays),
@@ -204,8 +114,9 @@ void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(file, "BLOCKS_DATA_CACHE", std::pow(2, dataBlocks),
                        "//Possible values: any power of 2 until 2^10");
-    printVerilogDefine(file, "WR_ALLOC_POLICY_DCACHE", dataWriteAllocPolicy,
-                       "//Possible values: 0 (No Write Allocate), 1 (Write Allocate)");
+    printVerilogDefine(
+        file, "WR_ALLOC_POLICY_DCACHE", dataWriteAllocPolicy,
+        "//Possible values: 0 (No Write Allocate), 1 (Write Allocate)");
     printVerilogDefine(file, "WR_POLICY_DCACHE", dataWritePolicy,
                        "//Possible values: 0 (Write Through), 1 (Write Back)");
     printVerilogDefine(file, "REPL_POLICY_DCACHE", dataReplPolicy,
@@ -216,8 +127,9 @@ void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(file, "BLOCKS_INSTR_CACHE", std::pow(2, instrBlocks),
                        "//Possible values: any power of 2 until 2^10");
-    printVerilogDefine(file, "WR_ALLOC_POLICY_ICACHE", instrWriteAllocPolicy,
-                       "//Possible values: 0 (No Write Allocate), 1 (Write Allocate)");
+    printVerilogDefine(
+        file, "WR_ALLOC_POLICY_ICACHE", instrWriteAllocPolicy,
+        "//Possible values: 0 (No Write Allocate), 1 (Write Allocate)");
     printVerilogDefine(file, "WR_POLICY_ICACHE", instrWritePolicy,
                        "//Possible values: 0 (Write Through), 1 (Write Back)");
     printVerilogDefine(file, "REPL_POLICY_ICACHE", instrReplPolicy,
