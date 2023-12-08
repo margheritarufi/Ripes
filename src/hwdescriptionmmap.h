@@ -2,7 +2,7 @@
 //@author Margherita Rufi
 //@version 1.0 2023-11-26
 //@brief This file contains the declaration of the functions of
-//hwdescriptionmmap.cpp.
+// hwdescriptionmmap.cpp.
 
 #include <iomanip>
 #include <memory>

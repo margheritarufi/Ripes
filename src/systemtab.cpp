@@ -2,7 +2,7 @@
 //@author Margherita Rufi
 //@version 1.0 2023-12-08
 //@brief This file contains the implementation of the SystemTab class, the
-//SystemTabView class the SystemBlock class and the SystemArrow class.
+// SystemTabView class the SystemBlock class and the SystemArrow class.
 
 #include "systemtab.h"
 #include "hwdescription.h"

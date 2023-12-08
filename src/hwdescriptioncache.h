@@ -2,7 +2,7 @@
 //@author Margherita Rufi
 //@version 1.1 2023-12-08
 //@brief This file contains the declaration of the functions used to save the
-//cache settings in a file.
+// cache settings in a file.
 
 #include "cachesim/cachesim.h"
 #include <QWidget>
