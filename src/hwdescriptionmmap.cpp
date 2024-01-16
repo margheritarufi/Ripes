@@ -45,7 +45,7 @@ std::shared_ptr<std::ofstream> createMemoryMapFile() {
 void writeMemoryMap(std::shared_ptr<std::ofstream> file) {
   const Ripes::MemoryMap *myMemMap = &Ripes::IOManager::get().memoryMap();
 
-  auto activePeripherals = Ripes::IOManager::get().getPeripherals();
+  //auto activePeripherals = Ripes::IOManager::get().getPeripherals();
 
   // Generate the XML content
   if (file->is_open()) {
@@ -53,9 +53,17 @@ void writeMemoryMap(std::shared_ptr<std::ofstream> file) {
     (*file) << "<memorymap>" << std::endl;
     (*file) << "  <name>MemoryMap</name>" << std::endl;
     (*file) << "  <description>Memory map with name of memory section, start "
-               "address and size"
+               "address and size in Bytes"
             << std::endl;
     (*file) << "  <memory_regions>" << std::endl;
+
+    //Main memory region
+    (*file) << "    <region>" << std::endl;
+    (*file) << "      <name>Main Memory</name>" << std::endl;
+    (*file) << "      <start_address>x00000000</start_address>" << std::endl;
+    (*file) << "      <size>4026531840</size>"
+            << std::endl;
+    (*file) << "    </region>" << std::endl;
 
     // Create individual memory region elements
     for (const auto &entry : *myMemMap) {

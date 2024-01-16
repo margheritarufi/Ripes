@@ -25,23 +25,17 @@ CacheWidget::CacheWidget(QWidget *parent)
 
   // rufi
   // Check if the parent of the current widget is a QWidget tab (data cache)
-  // or QWidget tab_2 (instruction cache). Then, save the number of ways,
-  // lines and blocks of the cache so that they can be written in the
-  // "params.vh" file.
-  // Note that this constructor is called before the launch of Ripes GUI,
-  // so the cache parameters saved in the following if clauses are the first
-  // ones available when the GUI is launched.
+  // or QWidget tab_2 (instruction cache). Then, use the pointer of the
+  // CacheSim related to this CacheWidget instantiation so that the cache
+  // parameters can be written in the "params.vh" file. Here the initial values
+  // of the parameters are saved.
   QWidget *typeOfCache = parent;
   if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
-    saveNbWaysDataCache(m_cacheSim);
-    saveNbLinesDataCache(m_cacheSim);
-    saveNbBlocksDataCache(m_cacheSim);
+    saveDataCacheSettings(m_cacheSim);
   }
 
   if (typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0) {
-    saveNbWaysInstrCache(m_cacheSim);
-    saveNbLinesInstrCache(m_cacheSim);
-    saveNbBlocksInstrCache(m_cacheSim);
+    saveInstrCacheSettings(m_cacheSim);
   }
   // end rufi
 
@@ -65,14 +59,10 @@ CacheWidget::CacheWidget(QWidget *parent)
     // in the following if clauses overwrite the initial ones.
     QWidget *typeOfCache = parent;
     if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
-      saveNbWaysDataCache(m_cacheSim);
-      saveNbLinesDataCache(m_cacheSim);
-      saveNbBlocksDataCache(m_cacheSim);
+      saveDataCacheSettings(m_cacheSim);
     }
     if (typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0) {
-      saveNbWaysInstrCache(m_cacheSim);
-      saveNbLinesInstrCache(m_cacheSim);
-      saveNbBlocksInstrCache(m_cacheSim);
+      saveInstrCacheSettings(m_cacheSim);
     }
     // end rufi
   });
