@@ -160,15 +160,13 @@ public:
     }
   }
 
-  //rufi ALREADY EXISTS!!!
+  // rufi ALREADY EXISTS!!!
   /*std::map<unsigned, IOParam> getParams() const {
     return m_parameters;
   }*/
 
-  unsigned getm_id() const {
-    return m_id;
-  }
-  //end rufi
+  unsigned getm_id() const { return m_id; }
+  // end rufi
 
 signals:
   /**
