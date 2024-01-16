@@ -28,11 +28,6 @@ extern std::map<unsigned int, Ripes::VInt>
                               // VInt is used to avoid error in the GitHub
                               // action "test.yml" (Ubuntu build)
 extern std::string paramsFileName;
-struct nbPeripheralsStruct {
-  int ledArraysCounter;
-  int switchesCounter;
-  int dpadsCounter;
-};
 
 void downloadFiles();
 QString openDirectoryDialog();

@@ -23,22 +23,23 @@ CacheWidget::CacheWidget(QWidget *parent)
   m_ui->cacheConfig->setCache(m_cacheSim);
   m_ui->cachePlot->setCache(m_cacheSim);
 
-         // rufi
-         // Check if the parent of the current widget is a QWidget tab (data cache)
-         // or QWidget tab_2 (instruction cache). Then, save the pointer to the
-         // CacheSim related to this CacheWidget instantiation so that the cache
-         //parameters can be written in the "params.vh" file.
+  // rufi
+  // Check if the parent of the current widget is a QWidget tab (data cache)
+  // or QWidget tab_2 (instruction cache). Then, use the pointer of the
+  // CacheSim related to this CacheWidget instantiation so that the cache
+  // parameters can be written in the "params.vh" file. Here the initial values
+  // of the parameters are saved.
   QWidget *typeOfCache = parent;
   if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
-    //saveDataCacheSimPointer(m_cacheSim); NO
+    // saveDataCacheSimPointer(m_cacheSim); NO
     saveDataCacheSettings(m_cacheSim);
-    //saveNbWaysDataCache(m_cacheSim);
-    //saveNbLinesDataCache(m_cacheSim);
-    //saveNbBlocksDataCache(m_cacheSim);
+    // saveNbWaysDataCache(m_cacheSim);
+    // saveNbLinesDataCache(m_cacheSim);
+    // saveNbBlocksDataCache(m_cacheSim);
   }
 
   if (typeOfCache->objectName().compare("tab_2", Qt::CaseInsensitive) == 0) {
-    //saveInstrCacheSimPointer(m_cacheSim); NO
+    // saveInstrCacheSimPointer(m_cacheSim); NO
     saveInstrCacheSettings(m_cacheSim);
     /*saveNbWaysInstrCache(m_cacheSim);
     saveNbLinesInstrCache(m_cacheSim);
@@ -56,18 +57,18 @@ CacheWidget::CacheWidget(QWidget *parent)
       static_cast<CacheView *>(cacheViews.at(0))->fitScene();
     }
 
-           // rufi
-           // Check if the parent of the current widget is a QWidget tab (data cache)
-           // or QWidget tab_2 (instruction cache). Then, save the number of ways,
-           // lines and blocks of the cache so that they can be written in the
-           // "params.vh" file.
-           // Note that this code section is executed any time the user changes the
-           // cache parameters from Ripes GUI. Therefore, the cache parameters saved
-           // in the following if clauses overwrite the initial ones.
+    // rufi
+    // Check if the parent of the current widget is a QWidget tab (data cache)
+    // or QWidget tab_2 (instruction cache). Then, save the number of ways,
+    // lines and blocks of the cache so that they can be written in the
+    // "params.vh" file.
+    // Note that this code section is executed any time the user changes the
+    // cache parameters from Ripes GUI. Therefore, the cache parameters saved
+    // in the following if clauses overwrite the initial ones.
     QWidget *typeOfCache = parent;
     if (typeOfCache->objectName().compare("tab", Qt::CaseInsensitive) == 0) {
       saveDataCacheSettings(m_cacheSim);
-      //saveDataCacheSimPointer(m_cacheSim);
+      // saveDataCacheSimPointer(m_cacheSim);
       /*saveNbWaysDataCache(m_cacheSim);
       saveNbLinesDataCache(m_cacheSim);
       saveNbBlocksDataCache(m_cacheSim);*/

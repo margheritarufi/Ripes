@@ -61,7 +61,7 @@ void downloadFiles() {
     selectedDirectory = QselectedDirectory.toStdString();
     folderName = QfolderName.toStdString();
 
-    // Create files if the use has chosen a valid name
+    // Create files if the user has chosen a valid name
     if (folderName != "") {
       // Create and write params.vh
       paramsFile = createParamsFile();
@@ -92,7 +92,7 @@ void downloadFiles() {
 
 // @brief openDirectoryDialog
 // This function is called by the downloadFiles() function. It creates a dialog
-// window to choose the directory where the files will be created.
+// window to choose the directory where the files will be downloaded or created.
 //
 // @param void
 // @return QString with the path of the selected directory
@@ -191,7 +191,7 @@ QString createFolder(QString directoryPath) {
 
 // @brief createParamsFile
 // This function is called by the downloadFiles() function. It creates the
-// params.vh file in the created folder and writes a presentation comment.
+// ripes_params.vh file in the created folder and writes a presentation comment.
 //
 // @param QString with the path of the selected directory
 // @param QString with the name of the created folder
@@ -549,8 +549,9 @@ QString createDialogFolderName(QInputDialog &inputDialog) {
 int createWarningBox(QMessageBox &msgBox, QString localQfolderName) {
   msgBox.setIcon(QMessageBox::Warning);
   msgBox.setText("The folder " + localQfolderName +
-                 " already exists. If you continue, its files will be "
-                 "overwritten.\nDo you want to overwrite the existing files?");
+                 " already exists. If you continue, all its files will be "
+                 "deleted and replaced with the new ones.\nDo you want to "
+                 "overwrite the existing folder? \n");
   msgBox.addButton(QMessageBox::Yes);
   msgBox.addButton(QMessageBox::Cancel);
   msgBox.setDefaultButton(QMessageBox::Cancel);

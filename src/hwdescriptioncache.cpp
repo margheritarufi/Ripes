@@ -76,7 +76,7 @@ void saveInstrCacheSettings(std::shared_ptr<Ripes::CacheSim> cacheSimPtr) {
 //@brief writeCacheSettings
 // This function is called in the function "downloadFiles" in the file
 // "hwdescription.cpp" and writes the parameters of the processor's cache in the
-// file "params.vh".
+// file "ripes_params.vh".
 //
 //@param std::shared_ptr<std::ofstream> file: pointer to the file "params.vh"
 //@return void
@@ -112,7 +112,7 @@ void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(file, "LINES_DATA_CACHE", std::pow(2, dataLines),
                        "//Possible values: any power of 2 until 2^10");
-    printVerilogDefine(file, "BLOCKS_DATA_CACHE", std::pow(2, dataBlocks),
+    printVerilogDefine(file, "WORDSLINE_DATA_CACHE", std::pow(2, dataBlocks),
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(
         file, "WR_ALLOC_POLICY_DCACHE", dataWriteAllocPolicy,
@@ -125,7 +125,7 @@ void writeCacheSettings(std::shared_ptr<std::ofstream> file) {
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(file, "LINES_INSTR_CACHE", std::pow(2, instrLines),
                        "//Possible values: any power of 2 until 2^10");
-    printVerilogDefine(file, "BLOCKS_INSTR_CACHE", std::pow(2, instrBlocks),
+    printVerilogDefine(file, "WORDSLINE_INSTR_CACHE", std::pow(2, instrBlocks),
                        "//Possible values: any power of 2 until 2^10");
     printVerilogDefine(
         file, "WR_ALLOC_POLICY_ICACHE", instrWriteAllocPolicy,

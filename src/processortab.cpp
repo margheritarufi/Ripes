@@ -414,7 +414,7 @@ void ProcessorTab::
     // Get the initial values of the registers.
     // Note that this code section is executed any time the user changes the
     // the inital register values from the Select Processor window (Register
-    // Initialization section). Therefore, the cache parameters saved
+    // Initialization section). Therefore, the values saved
     // in the following regsInitForHwDescription variable overwrite the default
     // ones. It will be used to write registerfile.xml
     regsInitForHwDescription = diag.getRegisterInitialization();

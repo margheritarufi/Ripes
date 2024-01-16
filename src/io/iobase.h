@@ -160,10 +160,10 @@ public:
     }
   }
 
-  //rufi
-  std::map<unsigned, IOParam> getParams() const {
+  //rufi ALREADY EXISTS!!!
+  /*std::map<unsigned, IOParam> getParams() const {
     return m_parameters;
-  }
+  }*/
 
   unsigned getm_id() const {
     return m_id;
